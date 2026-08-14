@@ -41,6 +41,13 @@ final class AppCoordinator {
 
     private var onboardingWindowController: OnboardingWindowController?
 
+    private let catalog = CharacterCatalog()
+    private let pickerController = PickerWindowController()
+    private lazy var insertionEngine: InsertionEngine = StubInsertionEngine(
+        catalog: { [weak self] in self?.catalog ?? CharacterCatalog() },
+        isDegraded: { [weak self] in self?.permissions.isDegraded ?? true }
+    )
+
     func start() {
         logger.info("Coordinator starting")
         statusItemController.onShowPicker = { [weak self] in
@@ -64,6 +71,15 @@ final class AppCoordinator {
         hotkeyManager.onFire = { [weak self] _ in
             self?.showPicker()
         }
+        pickerController.onCommit = { [weak self] variant, context in
+            self?.insertionEngine.commit(variant, for: context)
+            if self?.permissions.isDegraded == true {
+                CopiedToast.show()
+            }
+        }
+        pickerController.onRequestPermissions = { [weak self] in
+            self?.showOnboarding()
+        }
         hotkeyManager.start()
         permissions.beginMonitoring()
         if DiagnosticsMenuGate.isEnabled {
@@ -75,10 +91,22 @@ final class AppCoordinator {
         statusItemController.install()
     }
 
-    /// Shared entry point for the status-item "Show Picker" action and (later) the global hotkey
-    /// (#4). The picker panel itself arrives in #6.
+    /// Shared entry point for the status-item "Show Picker" action and the global hotkey.
+    /// A second press while the panel is up dismisses it.
     func showPicker() {
-        logger.info("Show Picker requested (picker panel arrives in #6)")
+        if pickerController.isVisible {
+            logger.info("Picker already open — dismissing")
+            pickerController.dismiss()
+            return
+        }
+        permissions.refresh()
+        let context = insertionEngine.currentContext()
+        logger.info("Showing picker")
+        pickerController.show(
+            context: context,
+            catalog: catalog,
+            degraded: permissions.isDegraded
+        )
     }
 
     /// Open the stub Settings window (hotkey recorder). Replaced by the real Settings in #8.
