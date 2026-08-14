@@ -171,7 +171,50 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             keyEquivalent: ""
         )
 
+        if DiagnosticsMenuGate.isEnabled {
+            buildDiagnosticsMenu(into: mainMenu)
+        }
+
         NSApp.mainMenu = mainMenu
         NSApp.windowsMenu = windowMenu
+    }
+
+    /// Diagnostics menu (#2 insertion-fidelity harness) — installed ONLY when the launch
+    /// environment opts in (`ACCENTED_DIAGNOSTICS=1` or `--diagnostics`). Posts real synthetic
+    /// events to the frontmost app, so it is hidden from normal product UX. Accessory apps have
+    /// no visible menu bar; the same items also live on the status-item menu.
+    private func buildDiagnosticsMenu(into mainMenu: NSMenu) {
+        logger.notice("Diagnostics menu ENABLED (#2 insertion-fidelity harness)")
+        let diagnosticsItem = NSMenuItem()
+        mainMenu.addItem(diagnosticsItem)
+        let diagnosticsMenu = NSMenu(title: "Diagnostics")
+        diagnosticsItem.submenu = diagnosticsMenu
+
+        let header = diagnosticsMenu.addItem(
+            withTitle: "Insertion fidelity (#2) — posts REAL events to the frontmost app",
+            action: nil,
+            keyEquivalent: ""
+        )
+        header.isEnabled = false
+        diagnosticsMenu.addItem(.separator())
+
+        for probeCase in InsertionFidelityProbe.Case.allCases {
+            let item = diagnosticsMenu.addItem(
+                withTitle: probeCase.title,
+                action: #selector(runProbeCase(_:)),
+                keyEquivalent: ""
+            )
+            item.target = self
+            item.representedObject = probeCase.rawValue
+        }
+    }
+
+    @objc private func runProbeCase(_ sender: NSMenuItem) {
+        guard let rawValue = sender.representedObject as? Int,
+              let probeCase = InsertionFidelityProbe.Case(rawValue: rawValue) else {
+            logger.error("Diagnostics: menu item has no valid probe case in representedObject")
+            return
+        }
+        coordinator.insertionFidelityProbe.run(probeCase)
     }
 }

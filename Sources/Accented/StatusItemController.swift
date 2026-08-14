@@ -18,6 +18,9 @@ final class StatusItemController: NSObject {
     var onShowSettings: (() -> Void)?
     var onCheckForUpdates: (() -> Void)?
     var onQuit: (() -> Void)?
+    /// Set only when `DiagnosticsMenuGate` is on. The status menu is the reachable surface for
+    /// an accessory app (no visible menu bar).
+    var onRunProbe: ((InsertionFidelityProbe.Case) -> Void)?
 
     func install() {
         guard statusItem == nil else { return }
@@ -76,6 +79,22 @@ final class StatusItemController: NSObject {
         )
         quit.target = target
 
+        if DiagnosticsMenuGate.isEnabled {
+            menu.addItem(.separator())
+            let diagItem = menu.addItem(withTitle: "Diagnostics", action: nil, keyEquivalent: "")
+            let diag = NSMenu(title: "Diagnostics")
+            diagItem.submenu = diag
+            for probeCase in InsertionFidelityProbe.Case.allCases {
+                let item = diag.addItem(
+                    withTitle: probeCase.title,
+                    action: #selector(runProbe(_:)),
+                    keyEquivalent: ""
+                )
+                item.target = target
+                item.representedObject = probeCase.rawValue
+            }
+        }
+
         return menu
     }
 
@@ -97,5 +116,15 @@ final class StatusItemController: NSObject {
     @objc private func quit(_ sender: Any?) {
         logger.info("Status menu: Quit")
         onQuit?()
+    }
+
+    @objc private func runProbe(_ sender: NSMenuItem) {
+        guard let raw = sender.representedObject as? Int,
+              let probeCase = InsertionFidelityProbe.Case(rawValue: raw) else {
+            logger.error("Diagnostics: menu item has no valid probe case")
+            return
+        }
+        logger.notice("Status menu: Diagnostics \(probeCase.title, privacy: .public)")
+        onRunProbe?(probeCase)
     }
 }

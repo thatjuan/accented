@@ -24,6 +24,10 @@ final class AppCoordinator {
     /// Menu-bar status item. Owned here so it lives for the app's lifetime.
     private let statusItemController = StatusItemController()
 
+    /// Insertion-fidelity harness (#2). Owned for the app's lifetime so the Diagnostics menu's
+    /// weak `target` stays live. Only reached when `DiagnosticsMenuGate` is on.
+    private(set) lazy var insertionFidelityProbe = InsertionFidelityProbe()
+
     func start() {
         logger.info("Coordinator starting")
         statusItemController.onShowPicker = { [weak self] in
@@ -37,6 +41,12 @@ final class AppCoordinator {
         }
         statusItemController.onQuit = {
             NSApp.terminate(nil)
+        }
+        if DiagnosticsMenuGate.isEnabled {
+            logger.notice("Diagnostics gate ON — insertion-fidelity probe menu will be installed")
+            statusItemController.onRunProbe = { [weak self] probeCase in
+                self?.insertionFidelityProbe.run(probeCase)
+            }
         }
         statusItemController.install()
     }
