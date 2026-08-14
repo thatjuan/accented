@@ -20,9 +20,18 @@ let package = Package(
     platforms: [
         .macOS(.v13)
     ],
+    dependencies: [
+        // Sparkle 2 auto-update framework, delivered by SwiftPM as a binary XCFramework.
+        // SwiftPM links it for compilation only; Scripts/package.sh copies + signs
+        // Sparkle.framework into the hand-assembled bundle.
+        .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.9.2")
+    ],
     targets: [
         .executableTarget(
             name: "Accented",
+            dependencies: [
+                .product(name: "Sparkle", package: "Sparkle")
+            ],
             path: "Sources/Accented",
             // Info.plist and the app icon live under Sources/Accented/ but are copied into the
             // bundle by Scripts/package.sh, not embedded by SwiftPM. Exclude them from the build
@@ -39,11 +48,10 @@ let package = Package(
                 .swiftLanguageMode(.v5)
             ],
             // No Xcode "Embed Frameworks" phase exists in this hand-assembled bundle. The binary
-            // is laid into Contents/MacOS/ (and Sparkle.framework into Contents/Frameworks/ by
-            // package.sh, once #9 lands), so the dynamic loader needs an rpath of
+            // is laid into Contents/MacOS/ and Sparkle.framework into Contents/Frameworks/ by
+            // package.sh, so the dynamic loader needs an rpath of
             // @executable_path/../Frameworks to resolve
-            // @rpath/Sparkle.framework/Versions/B/Sparkle at launch. Included now so #9 only
-            // adds the framework copy + signing.
+            // @rpath/Sparkle.framework/Versions/B/Sparkle at launch.
             linkerSettings: [
                 .unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])
             ]
@@ -53,7 +61,10 @@ let package = Package(
         // so it runs headless. Pinned to the Swift 5 language mode to match the app target.
         .testTarget(
             name: "AccentedTests",
-            dependencies: ["Accented"],
+            dependencies: [
+                "Accented",
+                .product(name: "Sparkle", package: "Sparkle")
+            ],
             path: "Tests/AccentedTests",
             swiftSettings: [
                 .swiftLanguageMode(.v5)

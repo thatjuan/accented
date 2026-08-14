@@ -12,9 +12,7 @@
 #     --entitlements file.
 #   - Non-sandboxed: no App Sandbox entitlement (sandbox forbids cross-app AX + CGEvent). This is
 #     why Accented ships as a notarized Developer ID app, not via the Mac App Store.
-#   - Sparkle embedding/signing lands in #9. The binary already has an rpath of
-#     @executable_path/../Frameworks (Package.swift linkerSettings) so that issue only adds the
-#     framework copy + inside-out nested codesign.
+#   - Sparkle is copied from the SwiftPM binary artifact and signed inside-out (no --deep).
 
 set -euo pipefail
 
@@ -37,6 +35,8 @@ readonly INFO_PLIST_SRC="${REPO_ROOT}/Sources/${APP_NAME}/Info.plist"
 # CFBundleIconFile=AppIcon points the Dock/Finder at it. SwiftPM doesn't embed it (excluded from the
 # build graph) — the bundle is hand-assembled, so it is copied here directly.
 readonly ICON_SRC="${REPO_ROOT}/Sources/${APP_NAME}/Resources/AppIcon.icns"
+readonly FRAMEWORKS_DIR="${CONTENTS_DIR}/Frameworks"
+readonly SPARKLE_ARTIFACT_DIR="${REPO_ROOT}/.build/artifacts/sparkle/Sparkle"
 
 # --- Build -----------------------------------------------------------------------------------
 echo "==> Building ${APP_NAME} (release)…"
@@ -62,10 +62,25 @@ if [[ ! -f "${ICON_SRC}" ]]; then
     exit 1
 fi
 
+SPARKLE_FRAMEWORK_SRC=""
+for slice in "${SPARKLE_ARTIFACT_DIR}"/Sparkle.xcframework/macos-*/Sparkle.framework; do
+    if [[ -d "${slice}" ]]; then
+        SPARKLE_FRAMEWORK_SRC="${slice}"
+        break
+    fi
+done
+readonly SPARKLE_FRAMEWORK_SRC
+
+if [[ -z "${SPARKLE_FRAMEWORK_SRC}" || ! -d "${SPARKLE_FRAMEWORK_SRC}" ]]; then
+    echo "ERROR: Sparkle.framework not found under ${SPARKLE_ARTIFACT_DIR}/Sparkle.xcframework/macos-*/" >&2
+    echo "       Run 'swift package resolve' (or 'swift build') to fetch the Sparkle binary artifact." >&2
+    exit 1
+fi
+
 # --- Assemble bundle (idempotent) ------------------------------------------------------------
 echo "==> Assembling bundle at ${APP_BUNDLE}…"
 rm -rf "${DIST_DIR}"
-mkdir -p "${MACOS_DIR}" "${RESOURCES_DIR}"
+mkdir -p "${MACOS_DIR}" "${RESOURCES_DIR}" "${FRAMEWORKS_DIR}"
 
 cp "${BUILT_BINARY}" "${MACOS_DIR}/${APP_NAME}"
 chmod +x "${MACOS_DIR}/${APP_NAME}"
@@ -76,9 +91,28 @@ cp "${ICON_SRC}" "${RESOURCES_DIR}/AppIcon.icns"
 # it for an APPL bundle.
 printf 'APPL????' > "${CONTENTS_DIR}/PkgInfo"
 
-# --- Sign the app (last, after all bundle contents are in place) -----------------------------
-# --deep is deliberately NOT used on sign (it would mis-sign nested Sparkle XPCs once #9 embeds
-# them). Verify below uses --deep, which is a different operation.
+echo "==> Embedding Sparkle.framework…"
+ditto "${SPARKLE_FRAMEWORK_SRC}" "${FRAMEWORKS_DIR}/Sparkle.framework"
+
+# --- Sign INSIDE-OUT (hardened runtime, no --deep) -------------------------------------------
+# Innermost nested XPC services + helpers first, then the framework, then the app last.
+# Nested Sparkle binaries KEEP their org.sparkle-project.* identifiers.
+readonly SPARKLE_FW="${FRAMEWORKS_DIR}/Sparkle.framework"
+readonly SPARKLE_VB="${SPARKLE_FW}/Versions/B"
+
+echo "==> Signing Sparkle nested components (inside-out)…"
+codesign --force --options runtime --sign "${SIGN_IDENTITY}" \
+    "${SPARKLE_VB}/XPCServices/Installer.xpc"
+codesign --force --options runtime --preserve-metadata=entitlements --sign "${SIGN_IDENTITY}" \
+    "${SPARKLE_VB}/XPCServices/Downloader.xpc"
+codesign --force --options runtime --sign "${SIGN_IDENTITY}" \
+    "${SPARKLE_VB}/Autoupdate"
+codesign --force --options runtime --sign "${SIGN_IDENTITY}" \
+    "${SPARKLE_VB}/Updater.app"
+codesign --force --options runtime --sign "${SIGN_IDENTITY}" \
+    "${SPARKLE_FW}"
+
+# --- Sign the app (last, after all bundle contents — incl. the framework — are in place) -----
 echo "==> Signing with: ${SIGN_IDENTITY}"
 codesign --force --options runtime \
     --identifier "${BUNDLE_ID}" \

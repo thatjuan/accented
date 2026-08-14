@@ -1,0 +1,40 @@
+# accented.app — Cloudflare Worker + R2 + a bare static landing page.
+#
+# Serves the Sparkle update feed and release enclosures out of R2. Marketing is
+# out of scope (#9); public/ is a download stub. See web/DEPLOY.md.
+
+name = "accented-web"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+workers_dev = true
+
+# Create the bucket once:  wrangler r2 bucket create accented-releases
+[[r2_buckets]]
+binding = "RELEASES"
+bucket_name = "accented-releases"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = ["/appcast.xml", "/releases/*", "/download", "/healthz"]
+not_found_handling = "404-page"
+
+# Uncomment once the accented.app zone is on this Cloudflare account. wrangler
+# deploy then provisions DNS + Universal SSL. SUFeedURL (https://accented.app/appcast.xml)
+# and the enclosure prefix (https://accented.app/releases/) both resolve here.
+# [[routes]]
+# pattern = "accented.app"
+# custom_domain = true
+#
+# [[routes]]
+# pattern = "www.accented.app"
+# custom_domain = true
+
+# Non-secret config. R2 S3 keys for publish.mjs live in .dev.vars (gitignored).
+[vars]
+# Point this at the current notarized, versioned DMG each release.
+DOWNLOAD_URL = "/releases/Accented-0.1.0-1.dmg"
+
+# Optional. Leave unset to serve appcast.xml from R2; set to an absolute https
+# URL to 302 /appcast.xml there (keeps SUFeedURL movable without reshipping).
+# APPCAST_REDIRECT_URL = ""

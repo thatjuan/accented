@@ -1,0 +1,10 @@
+node_modules/
+.wrangler/
+dist/
+
+# Secrets — local Worker/R2 vars. Never commit. Prod secrets go via `wrangler secret put`.
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+
+.DS_Store

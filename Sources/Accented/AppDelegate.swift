@@ -1,5 +1,6 @@
 import AppKit
 import os
+import Sparkle
 
 /// Application delegate: owns the main menu and the app-wide coordinator seam. Kept deliberately
 /// thin — feature wiring (hotkey, picker, insertion, settings, Sparkle) lives in `AppCoordinator`
@@ -29,8 +30,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        buildMainMenu()
         coordinator.start()
+        buildMainMenu()
 
         // #5: a granted launch opens nothing. Onboarding appears only when Accessibility
         // is actually missing. `start()` already refreshed via `beginMonitoring()`.
@@ -68,8 +69,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         coordinator.showSettings()
     }
 
-    /// Check for updates via the coordinator. Stub until Sparkle lands in #9; the status-item
-    /// and App-menu items share this action so #9 can retarget them together.
+    /// Fallback Check for Updates action. The App-menu item targets
+    /// `updaterController` directly so Sparkle can enable/disable it.
     @objc func checkForUpdates(_ sender: Any?) {
         coordinator.checkForUpdates()
     }
@@ -110,13 +111,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settingsItem.target = self
         appMenu.addItem(.separator())
 
-        // Stub until #9 wires this to SPUStandardUpdaterController.checkForUpdates(_:).
         let checkForUpdatesItem = appMenu.addItem(
             withTitle: "Check for Updates…",
-            action: #selector(checkForUpdates(_:)),
+            action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)),
             keyEquivalent: ""
         )
-        checkForUpdatesItem.target = self
+        checkForUpdatesItem.target = coordinator.updaterController
         appMenu.addItem(.separator())
 
         let hideItem = appMenu.addItem(

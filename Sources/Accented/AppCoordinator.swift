@@ -1,6 +1,7 @@
 import AppKit
 import Combine
 import os
+import Sparkle
 
 /// Top-level coordinator and the primary seam between issues. Issue #1 wires only what's needed
 /// to launch and to own the status item; later issues hang their subsystems off this object:
@@ -43,6 +44,11 @@ final class AppCoordinator {
     private var settingsWindowController: SettingsWindowController?
     private var cancellables = Set<AnyCancellable>()
 
+    /// Sparkle updater. Held for the app's lifetime so `NSMenuItem.target` (weak) stays live
+    /// and scheduled checks keep running. `startingUpdater: true` starts on first access.
+    private(set) lazy var updaterController = SPUStandardUpdaterController(
+        startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+
     private let pickerController = PickerWindowController()
     private lazy var insertionEngine: InsertionEngine = DefaultInsertionEngine(
         catalog: { [weak self] in self?.settingsStore.makeCatalog() ?? CharacterCatalog() },
@@ -61,9 +67,7 @@ final class AppCoordinator {
         statusItemController.onShowPermissions = { [weak self] in
             self?.showOnboarding()
         }
-        statusItemController.onCheckForUpdates = { [weak self] in
-            self?.checkForUpdates()
-        }
+        statusItemController.updatesTarget = updaterController
         statusItemController.onQuit = {
             NSApp.terminate(nil)
         }
@@ -84,6 +88,13 @@ final class AppCoordinator {
         pickerController.onRequestPermissions = { [weak self] in
             self?.showOnboarding()
         }
+        settingsStore.automaticallyChecksForUpdates =
+            updaterController.updater.automaticallyChecksForUpdates
+        settingsStore.$automaticallyChecksForUpdates
+            .sink { [weak self] enabled in
+                self?.updaterController.updater.automaticallyChecksForUpdates = enabled
+            }
+            .store(in: &cancellables)
         hotkeyManager.start()
         permissions.beginMonitoring()
         if DiagnosticsMenuGate.isEnabled {
@@ -120,7 +131,7 @@ final class AppCoordinator {
             settingsWindowController = SettingsWindowController(
                 store: settingsStore,
                 permissions: permissions,
-                checkForUpdates: { [weak self] in self?.checkForUpdates() }
+                checkForUpdates: { [weak self] in self?.updaterController.checkForUpdates(nil) }
             )
         }
         settingsWindowController?.showWindow(nil)
@@ -142,9 +153,7 @@ final class AppCoordinator {
         hotkeyManager.stop()
     }
 
-    /// Check for updates (#9). Stub until Sparkle is wired; #9 retargets the menu item at
-    /// `SPUStandardUpdaterController.checkForUpdates(_:)` and holds the controller here.
     func checkForUpdates() {
-        logger.info("Check for Updates requested (Sparkle arrives in #9)")
+        updaterController.checkForUpdates(nil)
     }
 }

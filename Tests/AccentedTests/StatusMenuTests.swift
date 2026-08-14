@@ -3,6 +3,7 @@
 #if canImport(Testing)
 import AppKit
 import ApplicationServices
+import Sparkle
 import Testing
 
 /// Status-item menu contract (#1). Titles and the Settings key equivalent are the product surface
@@ -30,6 +31,17 @@ struct StatusMenuTests {
         ])
         let help = menu.items.first { $0.title == "Help" }?.submenu
         #expect(help?.items.map(\.title) == ["Permissions…"])
+    }
+
+    @Test @MainActor
+    func checkForUpdatesUsesSparkleTargetWhenSet() {
+        let controller = StatusItemController()
+        let sparkle = NSObject()
+        controller.updatesTarget = sparkle
+        let menu = StatusItemController.makeMenu(target: controller)
+        let updates = menu.items.first { $0.title == "Check for Updates…" }
+        #expect(updates?.action == #selector(SPUStandardUpdaterController.checkForUpdates(_:)))
+        #expect(updates?.target === sparkle)
     }
 
     @Test @MainActor

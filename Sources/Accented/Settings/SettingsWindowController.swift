@@ -146,7 +146,7 @@ private struct GeneralSettingsTab: View {
             } header: {
                 Text("Software Update")
             } footer: {
-                Text("Sparkle wiring lands in issue #9. The toggle is ready for it.")
+                Text("Accented checks for new versions and verifies each download before installing.")
             }
 
             Section {

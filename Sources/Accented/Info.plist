@@ -4,8 +4,9 @@
   Accented Info.plist.
 
   CFBundleShortVersionString / CFBundleVersion are the single version source of truth
-  (Scripts/release.sh, arriving with #9, bumps them). Sparkle keys (SUFeedURL, SUPublicEDKey,
-  SUEnableAutomaticChecks, SUScheduledCheckInterval) land with #9 — do not add them here.
+  (Scripts/release.sh bumps them). Sparkle keys: SUPublicEDKey is a placeholder (32 zero
+  bytes) until generate_keys is run for Accented — do NOT reuse diarc's key or overwrite
+  the shared Sparkle keychain item. See docs/decisions/0002-sparkle-auto-updates.md.
 
   Note on TCC usage-string keys: Accessibility does NOT use a per-app Info.plist usage-description
   key (there is no NSAccessibilityUsageDescription the system reads). The OS shows a generic TCC
@@ -44,5 +45,13 @@
 	<string>Copyright © 2026 Juan Jaramillo. All rights reserved.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>https://accented.app/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</string>
+	<key>SUScheduledCheckInterval</key>
+	<integer>86400</integer>
 </dict>
 </plist>
