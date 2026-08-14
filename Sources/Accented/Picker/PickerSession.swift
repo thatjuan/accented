@@ -51,19 +51,22 @@ struct PickerSession: Equatable {
     private static func buildBrowse(context: PickerContext, catalog: CharacterCatalog) -> PickerSession? {
         let groups = catalog.allGroups()
         guard !groups.isEmpty else { return nil }
-        let rows: [Row] = groups.map { group in
-            let upper = false
-            let label: String?
-            if let base = group.base {
-                label = String(base)
-            } else {
-                label = nil
+        // One horizontal strip, catalog order (letters then extras). Numbers 1…9
+        // cover the first nine cells, same as variant mode.
+        var cells: [Cell] = []
+        for group in groups {
+            for variant in group.variants {
+                cells.append(Cell(
+                    variant: variant,
+                    glyph: variant.glyph(uppercase: false),
+                    number: cells.count < 9 ? cells.count + 1 : nil
+                ))
             }
-            return row(variants: group.variants, uppercase: upper, label: label)
         }
+        guard !cells.isEmpty else { return nil }
         return PickerSession(
             context: context,
-            rows: rows,
+            rows: [Row(label: nil, cells: cells)],
             selectedRow: 0,
             selectedColumn: 0,
             filteredBase: nil

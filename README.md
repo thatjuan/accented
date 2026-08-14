@@ -8,7 +8,7 @@ macOS already shows an accent menu when you hold a vowel, but it is slow (you wa
 
 1. You type normally. When you need an accented character, you press the global hotkey (default: `⌥ Space`, configurable).
 2. A small floating picker appears at your text caret (or near the mouse if the caret can't be located), styled like the native macOS accent popover.
-3. The picker is context-aware: if the character just before the caret is a base letter (`a`, `e`, `n`, `c`, ...), it shows that letter's enabled variants and, on selection, **replaces** the base letter (type `a`, hit the hotkey, pick `á`). If there is no matching base character, it shows your full enabled set grouped by base letter, and **inserts** the selection.
+3. The picker is context-aware: if the character just before the caret is a base letter (`a`, `e`, `n`, `c`, ...), it shows that letter's enabled variants and, on selection, **replaces** the base letter (type `a`, hit the hotkey, pick `á`). If there is no matching base character, it shows your full enabled set in one horizontal row, and **inserts** the selection.
 4. Selection works like the native menu: number keys `1–9`, arrow keys + `Return`, or click. `Esc` dismisses. Case follows the base character (`A` → `Á`).
 
 ## Customization
