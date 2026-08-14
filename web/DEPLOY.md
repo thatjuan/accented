@@ -14,6 +14,12 @@ up before the first real release.
 - The `accented.app` domain added as a **zone** in this Cloudflare account (Add Site → enter
   `accented.app` → set the registrar's nameservers to the ones Cloudflare assigns). TLS is
   Cloudflare **Universal SSL** (automatic once the zone is active).
+- **No apex / `www` A or CNAME records in that zone.** Adding a site imports whatever the
+  registrar had — usually a parking page. Custom domains refuse to attach over them
+  (`wrangler deploy` fails the trigger step with a 409, "already has externally managed DNS
+  records"), and `override_existing_dns_record` does not cover them. Delete the apex A and
+  the `www` CNAME in the dashboard first; `wrangler deploy` recreates both as proxied
+  Worker records. Leave MX/TXT alone — they carry email forwarding.
 
 ## 1. R2 bucket
 
