@@ -23,6 +23,10 @@ final class StatusItemController: NSObject {
         guard statusItem == nil else { return }
 
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        // Pin the extra so macOS doesn't restore it as hidden / off-canvas from a
+        // previous launch (Ventura+ persists visibility under this name).
+        item.autosaveName = "AccentedStatusItem"
+        item.isVisible = true
         if let button = item.button {
             // "á" is the product: an accented letter, readable as a template-ish title in both
             // appearances. A custom template image can replace this once the real icon ships.
