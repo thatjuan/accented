@@ -19,6 +19,7 @@ struct CharacterCatalogTests {
                 enabledPresetIDs: presets,
                 disabledCharacters: disabled,
                 customVariants: custom,
+                customExtras: [],
                 orderingMode: order
             ),
             usageCounts: usage
@@ -177,7 +178,7 @@ struct CharacterCatalogTests {
     func mruPutsMostUsedFirst() {
         let cat = catalog(
             presets: ["fr"],
-            order: .mostRecentlyUsed,
+            order: .mostUsed,
             usage: ["ê": 5, "è": 1]
         )
         #expect(glyphs(cat.variants(forBase: "e")) == ["ê", "è", "é", "ë"])
@@ -187,7 +188,7 @@ struct CharacterCatalogTests {
     func mruTiesKeepNativeOrder() {
         let cat = catalog(
             presets: ["fr"],
-            order: .mostRecentlyUsed,
+            order: .mostUsed,
             usage: ["è": 3, "ê": 3, "é": 3, "ë": 3]
         )
         #expect(glyphs(cat.variants(forBase: "e")) == ["è", "é", "ê", "ë"])
@@ -198,7 +199,7 @@ struct CharacterCatalogTests {
         let cat = catalog(
             presets: ["es"],
             custom: ["e": ["ə"]],
-            order: .mostRecentlyUsed,
+            order: .mostUsed,
             usage: ["é": 2]
         )
         #expect(glyphs(cat.variants(forBase: "e")) == ["é", "ə"])

@@ -28,7 +28,7 @@ final class DefaultInsertionEngine: InsertionEngine {
     private let logger = Logger(subsystem: "com.thatjuan.accented", category: "Insertion")
     private let catalog: () -> CharacterCatalog
     private let isDegraded: () -> Bool
-    private let defaults: UserDefaults
+    private let bumpUsage: (String) -> Void
 
     /// Roles that are not a text caret even if AX returns an element.
     private static let opaqueRoles: Set<String> = [
@@ -38,11 +38,11 @@ final class DefaultInsertionEngine: InsertionEngine {
     init(
         catalog: @escaping () -> CharacterCatalog,
         isDegraded: @escaping () -> Bool,
-        defaults: UserDefaults = .standard
+        bumpUsage: @escaping (String) -> Void
     ) {
         self.catalog = catalog
         self.isDegraded = isDegraded
-        self.defaults = defaults
+        self.bumpUsage = bumpUsage
     }
 
     func currentContext() -> PickerContext {
@@ -80,7 +80,7 @@ final class DefaultInsertionEngine: InsertionEngine {
             logger.info("Commit path=copy-pasteboard glyph=\(glyph, privacy: .public)")
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(glyph, forType: .string)
-            UsageCounts.bump(variant.character, in: defaults)
+            bumpUsage(variant.character)
             return
         }
 
@@ -93,6 +93,6 @@ final class DefaultInsertionEngine: InsertionEngine {
             logger.info("Commit path=insert-unicode glyph=\(glyph, privacy: .public)")
             EventPoster.postUnicode(glyph)
         }
-        UsageCounts.bump(variant.character, in: defaults)
+        bumpUsage(variant.character)
     }
 }

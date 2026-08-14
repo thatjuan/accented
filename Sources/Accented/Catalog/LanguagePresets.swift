@@ -4,6 +4,15 @@
 /// press-and-hold order (`NativeHoldKeyOrder`) so Spanish `e` is just `é` and French `e`
 /// is `è é ê ë` — the same sequence the system menu uses, minus the letters that language
 /// does not use.
+extension LanguagePreset {
+    /// Compact sample for Settings language rows: "á é í ó ú ü ñ ¿ ¡"
+    var sample: String {
+        let letters = groups.flatMap { $0.variants.map(\.character) }
+        let extra = extras.map(\.character)
+        return (letters + extra).joined(separator: " ")
+    }
+}
+
 enum LanguagePresets {
 
     static let all: [LanguagePreset] = [spanish, french, portuguese, german, italian, catalan, allDiacritics]
