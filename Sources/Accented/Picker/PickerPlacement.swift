@@ -7,6 +7,18 @@ enum PickerPlacement {
 
     static let gap: CGFloat = 6
 
+    /// AX sometimes hands back a real-looking rect that is nowhere on a display
+    /// (menu-bar managers, stale frames). Those must not win over the mouse.
+    static func usableCaret(_ caret: CGRect?, screens: [CGRect]) -> CGRect? {
+        guard let caret, !caret.isNull, !caret.isInfinite,
+              caret.width + caret.height > 0 else { return nil }
+        let slop: CGFloat = 40
+        if screens.contains(where: { $0.insetBy(dx: -slop, dy: -slop).intersects(caret) }) {
+            return caret
+        }
+        return nil
+    }
+
     static func frame(
         size: CGSize,
         caretRect: CGRect?,
