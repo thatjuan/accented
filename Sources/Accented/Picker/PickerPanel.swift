@@ -18,7 +18,9 @@ final class PickerPanel: NSPanel {
         )
         isFloatingPanel = true
         hidesOnDeactivate = false
-        level = .floating
+        // Above ordinary windows of the frontmost app. `.floating` is easy to lose
+        // behind a key window; the picker is a popover, not a document.
+        level = .statusBar
         collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
         isOpaque = false
         backgroundColor = .clear

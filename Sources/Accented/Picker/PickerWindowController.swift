@@ -1,6 +1,5 @@
 import AppKit
 import Carbon.HIToolbox
-import QuartzCore
 import os
 
 /// Long-lived owner of the accent picker panel. `show()` / `orderOut` lifecycle; one
@@ -21,6 +20,9 @@ final class PickerWindowController: NSWindowController, NSWindowDelegate {
     private var catalog = CharacterCatalog()
     private var clickMonitor: Any?
     private var isCommitting = false
+    /// `makeKey` on an accessory app often posts an immediate resign as the previous
+    /// app keeps active. Ignore that first one so we do not orderOut a just-shown panel.
+    private var ignoreResignUntil: Date?
 
     var isVisible: Bool { panel.isVisible }
 
@@ -57,6 +59,7 @@ final class PickerWindowController: NSWindowController, NSWindowDelegate {
     }
 
     func windowDidResignKey(_ notification: Notification) {
+        if let until = ignoreResignUntil, Date() < until { return }
         if !isCommitting { dismiss() }
     }
 
@@ -75,9 +78,9 @@ final class PickerWindowController: NSWindowController, NSWindowDelegate {
         content.session = built
         content.showsDegradedBanner = degraded
         layoutAndPosition(caretRect: context.caretRect)
-        fadeIn()
+        present()
         installClickOutsideMonitor()
-        logger.info("Picker shown mode=\(String(describing: context.mode), privacy: .public) degraded=\(degraded, privacy: .public)")
+        logger.info("Picker shown mode=\(String(describing: context.mode), privacy: .public) degraded=\(degraded, privacy: .public) frame=\(NSStringFromRect(self.panel.frame), privacy: .public) key=\(self.panel.isKeyWindow, privacy: .public)")
     }
 
     func dismiss() {
@@ -99,26 +102,28 @@ final class PickerWindowController: NSWindowController, NSWindowDelegate {
         panel.setContentSize(size)
 
         let mouse = NSEvent.mouseLocation
+        let screenFrames = NSScreen.screens.map(\.frame)
         let screen = NSScreen.screens.first(where: { $0.frame.contains(mouse) })?.visibleFrame
             ?? NSScreen.main?.visibleFrame
             ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
+        let caret = PickerPlacement.usableCaret(caretRect, screens: screenFrames)
         let frame = PickerPlacement.frame(
             size: size,
-            caretRect: caretRect,
+            caretRect: caret,
             mouse: mouse,
             screen: screen
         )
         panel.setFrame(frame, display: true)
     }
 
-    private func fadeIn() {
-        panel.alphaValue = 0
-        panel.makeKeyAndOrderFront(nil)
-        NSAnimationContext.runAnimationGroup { ctx in
-            ctx.duration = 0.07
-            ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
-            panel.animator().alphaValue = 1
-        }
+    /// Accessory + `.nonactivatingPanel`: `makeKeyAndOrderFront` does not raise the
+    /// window above the frontmost app. `orderFrontRegardless` does, without activating
+    /// us (the target field keeps its focus ring). Then `makeKey` so arrows / numbers work.
+    private func present() {
+        ignoreResignUntil = Date().addingTimeInterval(0.3)
+        panel.alphaValue = 1
+        panel.orderFrontRegardless()
+        panel.makeKey()
     }
 
     // MARK: - Input

@@ -88,6 +88,14 @@ struct PickerSessionTests {
     }
 
     @Test
+    func offScreenCaretIsRejected() {
+        let screens = [CGRect(x: 0, y: 0, width: 1440, height: 900)]
+        #expect(PickerPlacement.usableCaret(CGRect(x: 100, y: 200, width: 2, height: 14), screens: screens) != nil)
+        #expect(PickerPlacement.usableCaret(CGRect(x: -11614, y: -1437, width: 20, height: 16), screens: screens) == nil)
+        #expect(PickerPlacement.usableCaret(.zero, screens: screens) == nil)
+    }
+
+    @Test
     func emptyCaretFallsBackToMouse() {
         let size = CGSize(width: 80, height: 40)
         let screen = CGRect(x: 0, y: 0, width: 800, height: 600)
