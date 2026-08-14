@@ -17,8 +17,7 @@ struct PickerContext: Equatable, Sendable {
     var caretRect: CGRect?
 }
 
-/// #7 surface. #6 develops against this; `StubInsertionEngine` stands in until the real
-/// engine lands. Commit is called **after** the panel has `orderOut`'d (spike: events
+/// #7 surface. Commit is called **after** the panel has `orderOut`'d (spike: events
 /// follow key focus, 0 ms after resign is enough).
 @MainActor
 protocol InsertionEngine: AnyObject {

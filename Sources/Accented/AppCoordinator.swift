@@ -41,12 +41,16 @@ final class AppCoordinator {
 
     private var onboardingWindowController: OnboardingWindowController?
 
-    private let catalog = CharacterCatalog()
     private let pickerController = PickerWindowController()
-    private lazy var insertionEngine: InsertionEngine = StubInsertionEngine(
-        catalog: { [weak self] in self?.catalog ?? CharacterCatalog() },
+    private lazy var insertionEngine: InsertionEngine = DefaultInsertionEngine(
+        catalog: { [weak self] in self?.liveCatalog() ?? CharacterCatalog() },
         isDegraded: { [weak self] in self?.permissions.isDegraded ?? true }
     )
+
+    /// Catalog with persisted MRU tallies so #8 can flip `orderingMode` without a new key.
+    private func liveCatalog() -> CharacterCatalog {
+        CharacterCatalog(usageCounts: UsageCounts.load())
+    }
 
     func start() {
         logger.info("Coordinator starting")
@@ -104,7 +108,7 @@ final class AppCoordinator {
         logger.info("Showing picker")
         pickerController.show(
             context: context,
-            catalog: catalog,
+            catalog: liveCatalog(),
             degraded: permissions.isDegraded
         )
     }
