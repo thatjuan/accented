@@ -25,4 +25,4 @@ macOS already shows an accent menu when you hold a vowel, but it is slow (you wa
 
 ## Status
 
-Spec phase. Implementation is tracked in the GitHub issues of this repo.
+App shell and packaging pipeline are in place (`Scripts/package.sh`). Remaining work is tracked in the GitHub issues of this repo.

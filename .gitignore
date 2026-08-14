@@ -1,0 +1,18 @@
+# SwiftPM
+.build/
+.swiftpm/
+Package.resolved
+
+# Build output
+/dist/
+*.app/
+
+# Sparkle release archives (binaries are uploaded to the host, not committed; appcast is regenerated)
+/release-archives/
+
+# macOS
+.DS_Store
+
+# Xcode (if a project is later generated)
+*.xcodeproj/xcuserdata/
+DerivedData/
