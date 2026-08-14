@@ -31,6 +31,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         buildMainMenu()
         coordinator.start()
+
+        // #5: a granted launch opens nothing. Onboarding appears only when Accessibility
+        // is actually missing. `start()` already refreshed via `beginMonitoring()`.
+        if coordinator.permissions.isDegraded {
+            logger.info("Accessibility not granted at launch — showing onboarding")
+            coordinator.showOnboarding()
+        }
     }
 
     /// Any *other* already-running instance of Accented's own bundle id (excludes this process),
@@ -65,6 +72,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// and App-menu items share this action so #9 can retarget them together.
     @objc func checkForUpdates(_ sender: Any?) {
         coordinator.checkForUpdates()
+    }
+
+    @objc func openPermissions(_ sender: Any?) {
+        coordinator.showOnboarding()
     }
 
     // MARK: - Main menu
@@ -174,6 +185,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             action: #selector(NSApplication.arrangeInFront(_:)),
             keyEquivalent: ""
         )
+
+        let helpMenuItem = NSMenuItem()
+        mainMenu.addItem(helpMenuItem)
+        let helpMenu = NSMenu(title: "Help")
+        helpMenuItem.submenu = helpMenu
+        let permissionsItem = helpMenu.addItem(
+            withTitle: "Permissions…",
+            action: #selector(openPermissions(_:)),
+            keyEquivalent: ""
+        )
+        permissionsItem.target = self
 
         if DiagnosticsMenuGate.isEnabled {
             buildDiagnosticsMenu(into: mainMenu)

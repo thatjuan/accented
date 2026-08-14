@@ -2,6 +2,7 @@
 
 #if canImport(Testing)
 import AppKit
+import ApplicationServices
 import Testing
 
 /// Status-item menu contract (#1). Titles and the Settings key equivalent are the product surface
@@ -23,8 +24,12 @@ struct StatusMenuTests {
             "Settings…",
             "Check for Updates…",
             "",
+            "Help",
+            "",
             "Quit",
         ])
+        let help = menu.items.first { $0.title == "Help" }?.submenu
+        #expect(help?.items.map(\.title) == ["Permissions…"])
     }
 
     @Test @MainActor
@@ -38,6 +43,20 @@ struct StatusMenuTests {
     @Test
     func bundleIdentity() {
         #expect(AppIdentity.bundleID == "com.thatjuan.accented")
+    }
+
+    @Test
+    func permissionStatusGrantedFlag() {
+        #expect(PermissionStatus.granted.isGranted)
+        #expect(!PermissionStatus.denied.isGranted)
+    }
+
+    @Test @MainActor
+    func permissionsRefreshMatchesSystem() {
+        let manager = PermissionsManager()
+        manager.refresh()
+        #expect(manager.accessibility.isGranted == AXIsProcessTrusted())
+        #expect(manager.isDegraded == !AXIsProcessTrusted())
     }
 
     @Test
