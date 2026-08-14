@@ -4,9 +4,9 @@
   Accented Info.plist.
 
   CFBundleShortVersionString / CFBundleVersion are the single version source of truth
-  (Scripts/release.sh bumps them). Sparkle keys: SUPublicEDKey is a placeholder (32 zero
-  bytes) until generate_keys is run for Accented — do NOT reuse diarc's key or overwrite
-  the shared Sparkle keychain item. See docs/decisions/0002-sparkle-auto-updates.md.
+  (Scripts/release.sh bumps them). Sparkle: SUPublicEDKey is the Accented-only EdDSA
+  public key (`generate_keys --account accented`). Do not use diarc's default keychain
+  item. See docs/decisions/0002-sparkle-auto-updates.md.
 
   Note on TCC usage-string keys: Accessibility does NOT use a per-app Info.plist usage-description
   key (there is no NSAccessibilityUsageDescription the system reads). The OS shows a generic TCC
@@ -50,7 +50,7 @@
 	<key>SUFeedURL</key>
 	<string>https://accented.app/appcast.xml</string>
 	<key>SUPublicEDKey</key>
-	<string>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</string>
+	<string>hJ08/m9H2qvxYurB+NwqOba3wE++9GhKNc7YI0MBrI0=</string>
 	<key>SUScheduledCheckInterval</key>
 	<integer>86400</integer>
 </dict>
