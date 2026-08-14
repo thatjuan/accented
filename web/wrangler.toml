@@ -19,16 +19,16 @@ binding = "ASSETS"
 run_worker_first = ["/appcast.xml", "/releases/*", "/download", "/healthz"]
 not_found_handling = "404-page"
 
-# Uncomment once the accented.app zone is on this Cloudflare account. wrangler
-# deploy then provisions DNS + Universal SSL. SUFeedURL (https://accented.app/appcast.xml)
+# The accented.app zone lives on this Cloudflare account, so wrangler deploy
+# provisions DNS + Universal SSL for these. SUFeedURL (https://accented.app/appcast.xml)
 # and the enclosure prefix (https://accented.app/releases/) both resolve here.
-# [[routes]]
-# pattern = "accented.app"
-# custom_domain = true
-#
-# [[routes]]
-# pattern = "www.accented.app"
-# custom_domain = true
+[[routes]]
+pattern = "accented.app"
+custom_domain = true
+
+[[routes]]
+pattern = "www.accented.app"
+custom_domain = true
 
 # Non-secret config. R2 S3 keys for publish.mjs live in .dev.vars (gitignored).
 [vars]
