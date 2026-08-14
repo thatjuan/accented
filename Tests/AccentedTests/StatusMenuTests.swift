@@ -39,6 +39,12 @@ struct StatusMenuTests {
     func bundleIdentity() {
         #expect(AppIdentity.bundleID == "com.thatjuan.accented")
     }
+
+    @Test
+    func diagnosticsGateDefaultsOff() {
+        // Tests don't pass ACCENTED_DIAGNOSTICS / --diagnostics, so the product menu stays clean.
+        #expect(DiagnosticsMenuGate.isEnabled == false)
+    }
 }
 
 #else
