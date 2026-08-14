@@ -16,6 +16,7 @@ final class StatusItemController: NSObject {
 
     var onShowPicker: (() -> Void)?
     var onShowSettings: (() -> Void)?
+    var onShowPermissions: (() -> Void)?
     var onCheckForUpdates: (() -> Void)?
     var onQuit: (() -> Void)?
     /// Set only when `DiagnosticsMenuGate` is on. The status menu is the reachable surface for
@@ -72,6 +73,18 @@ final class StatusItemController: NSObject {
 
         menu.addItem(.separator())
 
+        let helpItem = menu.addItem(withTitle: "Help", action: nil, keyEquivalent: "")
+        let help = NSMenu(title: "Help")
+        helpItem.submenu = help
+        let permissions = help.addItem(
+            withTitle: "Permissions…",
+            action: #selector(showPermissions(_:)),
+            keyEquivalent: ""
+        )
+        permissions.target = target
+
+        menu.addItem(.separator())
+
         let quit = menu.addItem(
             withTitle: "Quit",
             action: #selector(quit(_:)),
@@ -106,6 +119,11 @@ final class StatusItemController: NSObject {
     @objc private func showSettings(_ sender: Any?) {
         logger.info("Status menu: Settings")
         onShowSettings?()
+    }
+
+    @objc private func showPermissions(_ sender: Any?) {
+        logger.info("Status menu: Help → Permissions")
+        onShowPermissions?()
     }
 
     @objc private func checkForUpdates(_ sender: Any?) {

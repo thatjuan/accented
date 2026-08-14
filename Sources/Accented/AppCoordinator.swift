@@ -36,6 +36,11 @@ final class AppCoordinator {
     private var hotkeySettingsWindow: HotkeySettingsWindowController?
     private let hotkeyStore = HotkeyStubStore(hotkey: HotkeyDefaults.load())
 
+    /// Shared Accessibility state (#5). Observed by onboarding; #6/#7 read `isDegraded`.
+    let permissions = PermissionsManager()
+
+    private var onboardingWindowController: OnboardingWindowController?
+
     func start() {
         logger.info("Coordinator starting")
         statusItemController.onShowPicker = { [weak self] in
@@ -43,6 +48,9 @@ final class AppCoordinator {
         }
         statusItemController.onShowSettings = { [weak self] in
             self?.showSettings()
+        }
+        statusItemController.onShowPermissions = { [weak self] in
+            self?.showOnboarding()
         }
         statusItemController.onCheckForUpdates = { [weak self] in
             self?.checkForUpdates()
@@ -57,6 +65,7 @@ final class AppCoordinator {
             self?.showPicker()
         }
         hotkeyManager.start()
+        permissions.beginMonitoring()
         if DiagnosticsMenuGate.isEnabled {
             logger.notice("Diagnostics gate ON — insertion-fidelity probe menu will be installed")
             statusItemController.onRunProbe = { [weak self] probeCase in
@@ -84,8 +93,19 @@ final class AppCoordinator {
         hotkeySettingsWindow?.window?.makeKeyAndOrderFront(nil)
     }
 
+    /// First-run / Help → Permissions…. Safe to call when already granted (the window
+    /// still explains the grant and shows the live badge).
+    func showOnboarding() {
+        logger.info("Onboarding requested (granted=\(self.permissions.accessibility.isGranted, privacy: .public))")
+        if onboardingWindowController == nil {
+            onboardingWindowController = OnboardingWindowController(permissions: permissions)
+        }
+        onboardingWindowController?.showWindow(nil)
+    }
+
     /// Drop Carbon registrations so a quit leaves no ghost hotkey.
     func stop() {
+        permissions.stopOnboardingPoll()
         hotkeyManager.stop()
     }
 
