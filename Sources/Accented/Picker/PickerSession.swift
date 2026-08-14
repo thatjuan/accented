@@ -31,6 +31,11 @@ struct PickerSession: Equatable {
         return rows[selectedRow].cells[selectedColumn].variant
     }
 
+    /// One cell in the whole strip: no choice to present, commit it.
+    var isSingleChoice: Bool {
+        rows.count == 1 && rows.first?.cells.count == 1
+    }
+
     static func build(context: PickerContext, catalog: CharacterCatalog) -> PickerSession? {
         switch context.mode {
         case .variants(let base, let uppercase):
@@ -117,14 +122,17 @@ struct PickerSession: Equatable {
     }
 
     /// Type a letter while the picker is up. One variant → commit it; several →
-    /// filter the strip to that group; none → ignore.
+    /// filter the strip to that group; none → ignore. Works in browse and in
+    /// variant mode (pressing the same letter again should not sit on a 1-cell strip).
     mutating func handleBrowseLetter(_ character: Character, catalog: CharacterCatalog) -> BrowseLetterResult {
-        guard case .browse = context.mode else { return .ignored }
         guard let base = character.lowercased().first else { return .ignored }
         let uppercase = character.isUppercase
         let variants = catalog.variants(forBase: base)
         guard !variants.isEmpty else { return .ignored }
         if variants.count == 1, let only = variants.first {
+            return .commit(only)
+        }
+        if isSingleChoice, let only = selectedVariant, only.base == base {
             return .commit(only)
         }
         filteredBase = base

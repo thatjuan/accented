@@ -19,6 +19,7 @@ final class PickerWindowController: NSWindowController, NSWindowDelegate {
     private var session: PickerSession?
     private var catalog = CharacterCatalog()
     private var clickMonitor: Any?
+    private var keyMonitor: Any?
     private var isCommitting = false
     /// `makeKey` on an accessory app often posts an immediate resign as the previous
     /// app keeps active. Ignore that first one so we do not orderOut a just-shown panel.
@@ -77,15 +78,22 @@ final class PickerWindowController: NSWindowController, NSWindowDelegate {
         session = built
         content.session = built
         content.showsDegradedBanner = degraded
+        if built.isSingleChoice, let only = built.selectedVariant {
+            logger.info("Single variant — committing without showing the picker")
+            commit(only)
+            return
+        }
         layoutAndPosition(caretRect: context.caretRect)
         present()
         installClickOutsideMonitor()
+        installKeyMonitor()
         logger.info("Picker shown mode=\(String(describing: context.mode), privacy: .public) degraded=\(degraded, privacy: .public) frame=\(NSStringFromRect(self.panel.frame), privacy: .public) key=\(self.panel.isKeyWindow, privacy: .public)")
     }
 
     func dismiss() {
         tearDownClickOutsideMonitor()
-        guard panel.isVisible else { return }
+        tearDownKeyMonitor()
+        guard panel.isVisible || session != nil else { return }
         panel.orderOut(nil)
         panel.alphaValue = 1
         session = nil
@@ -201,6 +209,26 @@ final class PickerWindowController: NSWindowController, NSWindowDelegate {
         body(&session)
         self.session = session
         content.session = session
+    }
+
+    /// Local monitor so letters reach us even when the nonactivating panel is not key.
+    /// Consumes the event so the letter is not also typed into the target field.
+    private func installKeyMonitor() {
+        tearDownKeyMonitor()
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            if event.modifierFlags.contains(.command) { return event }
+            MainActor.assumeIsolated {
+                self?.handleKey(event)
+            }
+            return nil
+        }
+    }
+
+    private func tearDownKeyMonitor() {
+        if let keyMonitor {
+            NSEvent.removeMonitor(keyMonitor)
+            self.keyMonitor = nil
+        }
     }
 
     private func installClickOutsideMonitor() {

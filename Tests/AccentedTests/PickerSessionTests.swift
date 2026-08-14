@@ -67,6 +67,25 @@ struct PickerSessionTests {
     }
 
     @Test
+    func variantModeWithOneOptionIsSingleChoice() {
+        let session = PickerSession.build(
+            context: PickerContext(mode: .variants(base: "a", uppercase: false), caretRect: nil),
+            catalog: catalog
+        )
+        #expect(session?.isSingleChoice == true)
+        #expect(session?.selectedVariant?.character == "á")
+    }
+
+    @Test
+    func pressingTheSameLetterInVariantModeCommitsTheOnlyOption() {
+        var session = PickerSession.build(
+            context: PickerContext(mode: .variants(base: "a", uppercase: false), caretRect: nil),
+            catalog: catalog
+        )!
+        #expect(session.handleBrowseLetter("a", catalog: catalog) == .commit(catalog.variants(forBase: "a")[0]))
+    }
+
+    @Test
     func arrowsWrapAlongTheSingleRow() {
         var session = PickerSession.build(
             context: PickerContext(mode: .browse, caretRect: nil),
