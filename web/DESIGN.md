@@ -34,7 +34,7 @@ The product mark is a Newsreader italic `á` in acute. Wordmark is “accented�
 
 ## Imagery
 
-Generated with **Grok Imagine** (`image_gen`), not fal.ai. Do not generate a fake screenshot of the picker. Open Design daemon was not reachable on `:7456` during this pass; the page was designed against these tokens and the `frontend-design` skill, then implemented in `web/public`.
+Generated with **Grok Imagine** (`image_gen`), not fal.ai. Do not generate a fake screenshot of the picker.
 
 | File | Use | Prompt |
 |---|---|---|
@@ -45,4 +45,4 @@ Real picker still: not captured in this pass (`TODO: real picker still`). Hero i
 
 ## Open Design
 
-Project: **Accented site**. Entry artifact is the one-pager used as the visual spec, then implemented in `web/public`.
+Project: **Accented site** (`accented-site`). Artifacts: `index.html` (desktop one-pager) and `mobile.html` (390px frame). Tokens live in `styles.css`. Implemented in `web/public`.
