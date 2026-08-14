@@ -33,11 +33,20 @@ struct LanguagePreset: Equatable, Sendable {
 
 /// How `CharacterCatalog` orders variants inside a group. Persistence lives in `SettingsStore` (#8);
 /// the catalog is handed the mode and a usage-count map, it does not read defaults itself.
-enum OrderingMode: String, Equatable, Sendable {
+enum OrderingMode: String, Equatable, Sendable, CaseIterable, Identifiable {
     /// Native macOS hold-key order (then first-seen across enabled presets, then customs).
     case presetOrder
     /// Higher `usageCounts` first; ties keep `presetOrder` (stable).
-    case mostRecentlyUsed
+    case mostUsed
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .presetOrder: return "Preset order"
+        case .mostUsed: return "Most used"
+        }
+    }
 }
 
 /// User configuration the catalog resolves against. Default-on Spanish matches Settings v1 (#8).
@@ -46,12 +55,15 @@ struct CatalogConfiguration: Equatable, Sendable {
     var disabledCharacters: [String]
     /// Extra glyphs the user attached to a base letter (`e` → `["ə"]`).
     var customVariants: [Character: [String]]
+    /// Custom extras (no base), e.g. extra punctuation.
+    var customExtras: [String]
     var orderingMode: OrderingMode
 
     static let `default` = CatalogConfiguration(
         enabledPresetIDs: ["es"],
         disabledCharacters: [],
         customVariants: [:],
+        customExtras: [],
         orderingMode: .presetOrder
     )
 }

@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import os
 
 /// Top-level coordinator and the primary seam between issues. Issue #1 wires only what's needed
@@ -32,25 +33,22 @@ final class AppCoordinator {
     /// `onFire` shares `showPicker()` with the status item.
     private let hotkeyManager = HotkeyManager()
 
-    /// Stub Settings host until #8. Holds the recorder so a change re-registers immediately.
-    private var hotkeySettingsWindow: HotkeySettingsWindowController?
-    private let hotkeyStore = HotkeyStubStore(hotkey: HotkeyDefaults.load())
+    /// Shared settings (#8). One instance app-wide; picker, hotkey, and Settings all read it.
+    let settingsStore = SettingsStore()
 
     /// Shared Accessibility state (#5). Observed by onboarding; #6/#7 read `isDegraded`.
     let permissions = PermissionsManager()
 
     private var onboardingWindowController: OnboardingWindowController?
+    private var settingsWindowController: SettingsWindowController?
+    private var cancellables = Set<AnyCancellable>()
 
     private let pickerController = PickerWindowController()
     private lazy var insertionEngine: InsertionEngine = DefaultInsertionEngine(
-        catalog: { [weak self] in self?.liveCatalog() ?? CharacterCatalog() },
-        isDegraded: { [weak self] in self?.permissions.isDegraded ?? true }
+        catalog: { [weak self] in self?.settingsStore.makeCatalog() ?? CharacterCatalog() },
+        isDegraded: { [weak self] in self?.permissions.isDegraded ?? true },
+        bumpUsage: { [weak self] glyph in self?.settingsStore.bumpUsage(glyph) }
     )
-
-    /// Catalog with persisted MRU tallies so #8 can flip `orderingMode` without a new key.
-    private func liveCatalog() -> CharacterCatalog {
-        CharacterCatalog(usageCounts: UsageCounts.load())
-    }
 
     func start() {
         logger.info("Coordinator starting")
@@ -69,9 +67,11 @@ final class AppCoordinator {
         statusItemController.onQuit = {
             NSApp.terminate(nil)
         }
-        hotkeyStore.onChange = { [weak self] hotkey in
-            self?.hotkeyManager.register([.picker: hotkey])
-        }
+        settingsStore.$hotkey
+            .sink { [weak self] hotkey in
+                self?.hotkeyManager.register([.picker: hotkey])
+            }
+            .store(in: &cancellables)
         hotkeyManager.onFire = { [weak self] _ in
             self?.showPicker()
         }
@@ -108,21 +108,22 @@ final class AppCoordinator {
         logger.info("Showing picker")
         pickerController.show(
             context: context,
-            catalog: liveCatalog(),
+            catalog: settingsStore.makeCatalog(),
             degraded: permissions.isDegraded
         )
     }
 
-    /// Open the stub Settings window (hotkey recorder). Replaced by the real Settings in #8.
+    /// Open Settings (⌘, / status menu). Reused across opens.
     func showSettings() {
         logger.info("Settings requested")
-        if hotkeySettingsWindow == nil {
-            hotkeySettingsWindow = HotkeySettingsWindowController(store: hotkeyStore)
+        if settingsWindowController == nil {
+            settingsWindowController = SettingsWindowController(
+                store: settingsStore,
+                permissions: permissions,
+                checkForUpdates: { [weak self] in self?.checkForUpdates() }
+            )
         }
-        hotkeyStore.hotkey = HotkeyDefaults.load()
-        NSApp.activate(ignoringOtherApps: true)
-        hotkeySettingsWindow?.showWindow(nil)
-        hotkeySettingsWindow?.window?.makeKeyAndOrderFront(nil)
+        settingsWindowController?.showWindow(nil)
     }
 
     /// First-run / Help → Permissions…. Safe to call when already granted (the window

@@ -8,7 +8,7 @@
 struct CharacterCatalog: Equatable, Sendable {
 
     var configuration: CatalogConfiguration
-    /// Lowercase glyph → commit count. Only consulted when `orderingMode == .mostRecentlyUsed`.
+    /// Lowercase glyph → commit count. Only consulted when `orderingMode == .mostUsed`.
     var usageCounts: [String: Int]
 
     init(
@@ -130,6 +130,13 @@ struct CharacterCatalog: Equatable, Sendable {
                 result.append(extra)
             }
         }
+        for glyph in configuration.customExtras {
+            let trimmed = glyph.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { continue }
+            let key = trimmed.lowercased()
+            guard !disabled.contains(key), seen.insert(key).inserted else { continue }
+            result.append(LanguagePresets.variant(trimmed, base: nil))
+        }
         return ordered(result, inBase: nil)
     }
 
@@ -137,7 +144,7 @@ struct CharacterCatalog: Equatable, Sendable {
 
     private func ordered(_ variants: [AccentVariant], inBase base: Character?) -> [AccentVariant] {
         variants.enumerated().sorted { a, b in
-            if configuration.orderingMode == .mostRecentlyUsed {
+            if configuration.orderingMode == .mostUsed {
                 let ac = usageCounts[a.element.character] ?? 0
                 let bc = usageCounts[b.element.character] ?? 0
                 if ac != bc { return ac > bc }
