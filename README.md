@@ -25,4 +25,4 @@ macOS already shows an accent menu when you hold a vowel, but it is slow (you wa
 
 ## Status
 
-App shell and packaging pipeline are in place (`Scripts/package.sh`). Remaining work is tracked in the GitHub issues of this repo.
+App, packaging, Sparkle wiring, and the release/appcast Worker live in this repo. Live hosting and the first signed feed still need a dedicated EdDSA key (`SPARKLE_ED_KEY_FILE`) and the `accented.app` Cloudflare standup in `web/DEPLOY.md`.

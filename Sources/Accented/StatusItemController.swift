@@ -1,5 +1,6 @@
 import AppKit
 import os
+import Sparkle
 
 /// Owns the menu-bar `NSStatusItem` and its menu.
 ///
@@ -18,6 +19,8 @@ final class StatusItemController: NSObject {
     var onShowSettings: (() -> Void)?
     var onShowPermissions: (() -> Void)?
     var onCheckForUpdates: (() -> Void)?
+    /// When set, "Check for Updates…" uses Sparkle's standard action (auto enable/disable).
+    var updatesTarget: AnyObject?
     var onQuit: (() -> Void)?
     /// Set only when `DiagnosticsMenuGate` is on. The status menu is the reachable surface for
     /// an accessory app (no visible menu bar).
@@ -69,7 +72,12 @@ final class StatusItemController: NSObject {
             action: #selector(checkForUpdates(_:)),
             keyEquivalent: ""
         )
-        updates.target = target
+        if let controller = target as? StatusItemController, let updatesTarget = controller.updatesTarget {
+            updates.action = #selector(SPUStandardUpdaterController.checkForUpdates(_:))
+            updates.target = updatesTarget
+        } else {
+            updates.target = target
+        }
 
         menu.addItem(.separator())
 

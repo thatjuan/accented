@@ -1,0 +1,16 @@
+# Copy to `.dev.vars` and fill in. `.dev.vars` is gitignored — never commit real values.
+#
+# These credentials are ONLY for the publish pipeline (scripts/publish.mjs), which talks to
+# R2 over the S3-compatible API. The Worker itself needs no secrets to serve.
+#
+# Create an R2 API token in the Cloudflare dashboard (R2 → Manage R2 API Tokens),
+# scoped to the accented-releases bucket with Object Read & Write.
+
+R2_ACCOUNT_ID=your-cloudflare-account-id
+R2_ACCESS_KEY_ID=your-r2-access-key-id
+R2_SECRET_ACCESS_KEY=your-r2-secret-access-key
+R2_BUCKET=accented-releases
+
+# Absolute path to the release-archives/ folder release.sh writes into.
+# Defaults to ../release-archives relative to web/ if unset.
+# RELEASE_ARCHIVES=/absolute/path/to/release-archives
