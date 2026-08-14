@@ -86,17 +86,17 @@ Legend: **PASS** = observed via AX value and/or app-level readback. **DEGRADE** 
 | App | Insert (session-tap unicode) | Replace (backspace+unicode) | Caret rect | Failure mode / notes |
 |---|---|---|---|---|
 | TextEdit | PASS | PASS | PASS (0×14, tracks caret) | New docs start at loc=0 — no preceding char until the user types. |
-| Notes | opaque | n/a | no | Focused `AXTable` (sidebar) or WKWebView body that does not expose value/range. Clicking the window did not yield a text AX element. Treat as browse + mouse until a body focus is actually AX-visible. |
+| Notes | PASS (once body focused) | n/a | PASS (0×23, x tracks) | Sidebar is `AXTable` and steals focus. Body is `AXTextArea` inside the third split scroll area — then preceding char + bounds work. Value is the whole note. |
 | Safari `<input>` | PASS | PASS | PASS (2×13) | AX replace **DEGRADE** (success, no mutation). |
 | Safari contenteditable | PASS | (same stack; not separately timed) | PASS (2×18) | Exposed as `AXTextArea`. |
 | Chrome `<input>` | PASS | PASS | **0×0** — unusable | Must fall back to mouse for positioning. Insert/replace still work. |
 | Chrome contenteditable | PASS | PASS | 0×0 | Same as input. First attempt against a bare `AXWebArea` (no field focus) was FAIL — focus the field. |
-| VS Code / Electron | opaque | n/a | no | `kAXFocusedUIElement` is nil. File on disk did not change (editor never became key in this run). Expect session-tap to work *if* the editor is focused; do not trust AX for context or caret. |
-| Slack | n/a (not typed into a live channel) | n/a | no | Snapshot landed on `AXButton`. Compose field is Electron; same posture as VS Code. |
+| VS Code / Electron | PASS | PASS | **0×0** | After editor focus: `AXTextArea`, preceding char works, insert and backspace-replace both land. Disk file may stay stale (unsaved buffer). |
+| Slack | n/a (not typed into a live channel) | n/a | no | Snapshot landed on `AXButton`. Compose is Electron; treat like VS Code once the message field is focused. |
 | Terminal.app | PASS | (insert-only; `cat` readback `aáéîñüß¿œ`) | 0×0 | `AXTextArea` value is the whole scrollback. Preceding char works. Bounds useless. |
 | iTerm2 | n/a | n/a | n/a | Not installed. |
 | Messages | n/a | n/a | n/a | Not launched; do not type into a real conversation from a spike. |
-| Microsoft Word | opaque | n/a | no | Focused `AXSplitGroup`. Insert not confirmed (frontmost stolen mid-case). Do not rely on AX. |
+| Microsoft Word | PASS (Word API readback `Aáéîñüß¿œ`) | n/a | no | AX focused element stays `AXSplitGroup` — no range/value/bounds. Insert still lands (Word auto-caps the typed `a`). Fail open to browse + mouse. |
 
 ## Strategies for #7
 
@@ -127,9 +127,10 @@ One backspace (`virtualKey 0x33`) then the same unicode insert. Only when contex
 
 ## Per-app quirks #7 should comment in the engine
 
-- Chromium (Chrome, likely Electron: VS Code, Slack, Dia): insert/replace work once a text field is focused; caret bounds are 0×0; AX web-area focus is a miss — fail open to browse + mouse.
+- Chromium (Chrome, Electron: VS Code, likely Slack): insert/replace work once a text field/editor is focused; caret bounds are 0×0; a bare `AXWebArea` / `AXButton` focus is a miss — fail open to browse + mouse.
 - Terminal: value is the whole buffer; use range + stringForRange, ignore the giant AXValue for anything except preceding-char.
-- Notes / Word: AX often not a text element. Fail open. Session-tap still worth firing if the user actually had a caret; we just cannot see it.
+- Notes: if focused role is `AXTable`, the sidebar is selected — fail open. The body `AXTextArea` (third split scroll area) is a normal text control.
+- Word: insert works; AX never shows a text element. Always browse + mouse.
 - Always log the commit path (`insert-unicode` / `replace-backspace`) and the focused role.
 
 ## Procedure (re-run)
