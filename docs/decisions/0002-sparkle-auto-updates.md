@@ -1,6 +1,6 @@
 # ADR 0002 — Sparkle 2 auto-updates: EdDSA keys and the `SUFeedURL` contract
 
-- **Status:** Accepted (spec; key not yet generated)
+- **Status:** Accepted — key generated 2026-08-14 (`--account accented`); `SUPublicEDKey` baked in
 - **Date:** 2026-08-14
 - **Part of:** issue **#9**
 - **Port of:** diarc `docs/decisions/0003-sparkle-auto-updates.md`
@@ -36,8 +36,9 @@ colliding with diarc, the lost-key failure mode, and the four Sparkle keys in
 4. **`SUFeedURL` is `https://accented.app/appcast.xml`.** It freezes into every shipped
    binary. HTTPS, stable, redirectable (Worker `APPCAST_REDIRECT_URL`). Pick the domain
    before first ship — done here.
-5. **`SUPublicEDKey` ships as a structurally valid placeholder** (32 zero-bytes, base64)
-   until the real key is generated. A non-base64 token would error at `startUpdater`.
+5. **`SUPublicEDKey` is `hJ08/m9H2qvxYurB+NwqOba3wE++9GhKNc7YI0MBrI0=`** (account
+   `accented`, generated 2026-08-14). Private key lives in the login keychain and in
+   `~/accented-sparkle-ed25519-private.key` (not in the repo).
 
 ## EdDSA key procedure (maintainer)
 
@@ -103,16 +104,16 @@ redirect (or a new major that nobody has yet) can move it.
 |---|---|---|
 | `SUEnableAutomaticChecks` | `<true/>` | Seeds default-on background checks. Settings toggle writes `SPUUpdater.automaticallyChecksForUpdates` (Sparkle's UserDefaults is the runtime store). |
 | `SUFeedURL` | `https://accented.app/appcast.xml` | Frozen feed URL. |
-| `SUPublicEDKey` | `AAAA…AAA=` (44-char base64 of 32 zero-bytes) | Placeholder until `generate_keys --account accented`. Structurally valid so the updater starts. |
+| `SUPublicEDKey` | `hJ08/m9H2qvxYurB+NwqOba3wE++9GhKNc7YI0MBrI0=` | Public half of the `--account accented` keypair. |
 | `SUScheduledCheckInterval` | `86400` | Daily. |
 
 Sandboxed-only Sparkle keys are **not** added. Accented is not sandboxed.
 
 ## Consequences
 
-- The repo carries a structurally valid placeholder. The app builds; the updater starts;
-  download-time verification fails until the real key + a signed appcast exist.
-- **Before the first real release:** generate the dedicated key, `-x` backup, replace
-  `SUPublicEDKey`, stand up `accented.app` (ADR 0003).
+- The public key is baked in. Signing a feed still needs `SPARKLE_ED_KEY_FILE` (or the
+  `accented` keychain item) plus live hosting (ADR 0003).
+- **Still on the maintainer:** put the `-x` backup in a password manager, then stand up
+  `accented.app`.
 - Do not run `generate_keys -f` (or bare `generate_keys`) against the default account on
   this machine. That is diarc's slot.
