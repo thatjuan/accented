@@ -116,18 +116,27 @@ struct PickerSession: Equatable {
         selectedColumn = column
     }
 
-    /// Type a letter in browse mode: jump to that group's row, or filter to a single variant row.
-    /// Returns `true` if the letter was consumed.
-    mutating func handleBrowseLetter(_ character: Character, catalog: CharacterCatalog) -> Bool {
-        guard case .browse = context.mode else { return false }
-        guard let base = character.lowercased().first else { return false }
+    /// Type a letter while the picker is up. One variant → commit it; several →
+    /// filter the strip to that group; none → ignore.
+    mutating func handleBrowseLetter(_ character: Character, catalog: CharacterCatalog) -> BrowseLetterResult {
+        guard case .browse = context.mode else { return .ignored }
+        guard let base = character.lowercased().first else { return .ignored }
         let uppercase = character.isUppercase
         let variants = catalog.variants(forBase: base)
-        guard !variants.isEmpty else { return false }
+        guard !variants.isEmpty else { return .ignored }
+        if variants.count == 1, let only = variants.first {
+            return .commit(only)
+        }
         filteredBase = base
         rows = [Self.row(variants: variants, uppercase: uppercase, label: nil)]
         selectedRow = 0
         selectedColumn = 0
-        return true
+        return .filtered
     }
+}
+
+enum BrowseLetterResult: Equatable {
+    case ignored
+    case filtered
+    case commit(AccentVariant)
 }

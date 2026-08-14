@@ -40,17 +40,30 @@ struct PickerSessionTests {
     }
 
     @Test
-    func browseLetterFiltersToThatGroup() {
+    func browseLetterFiltersWhenSeveralVariants() {
         var session = PickerSession.build(
             context: PickerContext(mode: .browse, caretRect: nil),
             catalog: catalog
         )!
-        let consumed = session.handleBrowseLetter("e", catalog: catalog)
-        #expect(consumed)
+        // Spanish `u` is ú + ü. A single-option letter commits instead (see below).
+        let result = session.handleBrowseLetter("u", catalog: catalog)
+        #expect(result == .filtered)
         #expect(session.rows.count == 1)
-        #expect(session.rows.first?.cells.map(\.glyph) == ["é"])
-        #expect(session.filteredBase == "e")
+        #expect(session.rows.first?.cells.map(\.glyph) == ["ú", "ü"])
+        #expect(session.filteredBase == "u")
         #expect(session.context.mode == .browse)
+    }
+
+    @Test
+    func browseLetterCommitsWhenOnlyOneVariant() {
+        var session = PickerSession.build(
+            context: PickerContext(mode: .browse, caretRect: nil),
+            catalog: catalog
+        )!
+        let result = session.handleBrowseLetter("a", catalog: catalog)
+        #expect(result == .commit(catalog.variants(forBase: "a")[0]))
+        #expect(session.filteredBase == nil)
+        #expect(session.rows.first?.cells.map(\.glyph).contains("á") == true)
     }
 
     @Test

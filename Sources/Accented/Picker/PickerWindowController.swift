@@ -156,8 +156,21 @@ final class PickerWindowController: NSWindowController, NSWindowDelegate {
                let chars = event.charactersIgnoringModifiers,
                let letter = chars.first,
                letter.isLetter {
-                mutate { _ = $0.handleBrowseLetter(letter, catalog: catalog) }
+                applyBrowseLetter(letter)
             }
+        }
+    }
+
+    private func applyBrowseLetter(_ letter: Character) {
+        guard var session else { return }
+        switch session.handleBrowseLetter(letter, catalog: catalog) {
+        case .ignored:
+            break
+        case .filtered:
+            self.session = session
+            content.session = session
+        case .commit(let variant):
+            commit(variant)
         }
     }
 
