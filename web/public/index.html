@@ -3,14 +3,129 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Accented</title>
-  <meta name="description" content="A tiny macOS menu bar accent picker." />
+  <title>Accented — accents, on your terms</title>
+  <meta name="description" content="A tiny macOS menu bar picker for accented characters. Instant, global, and limited to the languages you actually write in. Free download." />
+  <link rel="canonical" href="https://accented.app/" />
+
+  <meta property="og:site_name" content="Accented" />
+  <meta property="og:title" content="Accented — accents, on your terms" />
+  <meta property="og:description" content="A tiny macOS menu bar picker for accented characters. Instant, global, and limited to the languages you actually write in. Free download." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://accented.app/" />
+  <meta property="og:image" content="https://accented.app/og-image.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Accented — accents, on your terms" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Accented — accents, on your terms" />
+  <meta name="twitter:description" content="A tiny macOS menu bar picker for accented characters. Instant, global, and limited to the languages you actually write in. Free download." />
+  <meta name="twitter:image" content="https://accented.app/og-image.jpg" />
+  <meta name="twitter:image:alt" content="Accented — accents, on your terms" />
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/favicon.svg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Newsreader:opsz,ital,wght@6..72,0,400;6..72,1,500&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <main>
-    <h1>Accented</h1>
-    <p>A tiny macOS menu bar utility for accented characters.</p>
-    <p><a href="/download">Download for macOS</a></p>
-  </main>
+  <div class="wrap">
+    <header class="site-header">
+      <a class="logo" href="/" aria-label="Accented home"><span class="acute">á</span>ccented</a>
+      <a class="btn btn--ink" href="/download">Download</a>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">macOS · menu bar</p>
+          <h1 class="display">The accent picker macOS almost shipped.</h1>
+          <p class="lede">
+            Hold-to-accent is slow, it vanishes when key repeat is on, and it dumps every mark
+            for every language you enabled. Accented is a global hotkey and a small strip of
+            only the characters you use.
+          </p>
+          <div class="actions">
+            <a class="btn btn--ink btn--lg" href="/download">
+              Download for macOS
+              <span class="btn-arrow" aria-hidden="true">↓</span>
+            </a>
+            <span class="version">v0.1.0</span>
+          </div>
+          <p class="fine">macOS 13 or later. Menu bar app. Free.</p>
+        </div>
+        <div class="stage">
+          <img
+            src="/hero.webp"
+            width="1280"
+            height="720"
+            alt="Letterpress á é ñ ü ¿ on cream paper"
+          />
+        </div>
+      </section>
+
+      <section class="how" aria-label="How it works">
+        <ol class="how-list">
+          <li>
+            <span class="num">01</span>
+            <h2>Type, then trigger.</h2>
+            <p>Keep writing. When you need a mark, press <kbd>⌥Space</kbd> (or your own combo).</p>
+          </li>
+          <li>
+            <span class="num">02</span>
+            <h2>Pick from your set.</h2>
+            <p>If you just typed <kbd>a</kbd>, you see <kbd>á</kbd> (and only what you enabled for <kbd>a</kbd>). If you did not, you see your whole set in one row.</p>
+          </li>
+          <li>
+            <span class="num">03</span>
+            <h2>It lands in the field.</h2>
+            <p>Numbers, arrows, or a click. The picker goes away. The character replaces or inserts.</p>
+          </li>
+        </ol>
+      </section>
+    </main>
+  </div>
+
+  <div class="wrap">
+    <section class="features" aria-label="Features">
+      <article class="card">
+        <p class="card-label">01 — Yours</p>
+        <h3>Yours, not the system’s.</h3>
+        <p>Spanish, French, Portuguese, German, Italian, Catalan. Turn languages on. Turn individual characters off. Add your own.</p>
+      </article>
+      <article class="card">
+        <p class="card-label">02 — Instant</p>
+        <h3>Instant, not a hold.</h3>
+        <p>No press-and-hold delay. Works with key repeat on. Same trigger in every app.</p>
+      </article>
+      <article class="card">
+        <p class="card-label">03 — Native</p>
+        <h3>A real Mac app.</h3>
+        <p>Menu bar, no Dock icon, Sparkle updates, Accessibility asked once and explained.</p>
+      </article>
+    </section>
+  </div>
+
+  <section class="closer">
+    <h2 class="display">Only the marks you actually use.</h2>
+    <div class="actions">
+      <a class="btn btn--paper btn--lg" href="/download">Download for macOS</a>
+    </div>
+    <p class="fine"><span class="version version--quiet">macOS 13 or later</span></p>
+  </section>
+
+  <div class="wrap">
+    <footer class="site-footer">
+      <a class="foot-logo" href="/" aria-label="Accented">á</a>
+      <nav class="foot-links" aria-label="Footer">
+        <a href="https://github.com/thatjuan/accented/issues">Feedback</a>
+      </nav>
+      <span class="disclaimer">Accented is an independent app. Not affiliated with Apple.</span>
+    </footer>
+  </div>
 </body>
 </html>

@@ -1,7 +1,7 @@
 # accented.app — Cloudflare Worker + R2 + a bare static landing page.
 #
-# Serves the Sparkle update feed and release enclosures out of R2. Marketing is
-# out of scope (#9); public/ is a download stub. See web/DEPLOY.md.
+# Serves the Sparkle update feed and release enclosures out of R2, and the
+# one-page marketing site out of public/. See web/DEPLOY.md.
 
 name = "accented-web"
 main = "src/index.ts"

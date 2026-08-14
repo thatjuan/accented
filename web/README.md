@@ -1,7 +1,7 @@
-# accented.app — Cloudflare Worker + R2
+# accented.app — marketing site + Sparkle host
 
-Serves the Sparkle update feed and release binaries over HTTPS. A marketing site is out of
-scope; `public/` is a download stub.
+One-page site in `public/` plus a Worker that fronts R2 for the Sparkle feed
+and release binaries. Copy: `COPY.md`. Design: `DESIGN.md`.
 
 ## Frozen contracts (do not change after first ship)
 
@@ -25,7 +25,9 @@ See `DEPLOY.md` for one-time standup, and `docs/decisions/0002-sparkle-auto-upda
 web/
   wrangler.toml          Worker + R2 binding (RELEASES → accented-releases)
   src/index.ts           /healthz, /appcast.xml, /releases/*, /download
-  public/                bare landing + 404
+  public/                one-page site + 404 + OG/favicon
+  COPY.md                locked marketing copy
+  DESIGN.md              direction, tokens, image prompts
   scripts/publish.mjs    pull-before-regenerate + ordered upload to R2
   .dev.vars.example      publish-pipeline R2 credentials
 ```
