@@ -43,6 +43,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .first { $0 != .current }
     }
 
+    func applicationWillTerminate(_ notification: Notification) {
+        coordinator.stop()
+    }
+
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         // Menu-bar app: closing Settings / onboarding must NOT quit. Quit is explicit
         // (status menu / Cmd-Q).

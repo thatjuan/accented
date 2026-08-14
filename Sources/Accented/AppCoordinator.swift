@@ -28,6 +28,14 @@ final class AppCoordinator {
     /// weak `target` stays live. Only reached when `DiagnosticsMenuGate` is on.
     private(set) lazy var insertionFidelityProbe = InsertionFidelityProbe()
 
+    /// Global hotkey (#4). Owned here so registration lives for the app lifetime and
+    /// `onFire` shares `showPicker()` with the status item.
+    private let hotkeyManager = HotkeyManager()
+
+    /// Stub Settings host until #8. Holds the recorder so a change re-registers immediately.
+    private var hotkeySettingsWindow: HotkeySettingsWindowController?
+    private let hotkeyStore = HotkeyStubStore(hotkey: HotkeyDefaults.load())
+
     func start() {
         logger.info("Coordinator starting")
         statusItemController.onShowPicker = { [weak self] in
@@ -42,6 +50,13 @@ final class AppCoordinator {
         statusItemController.onQuit = {
             NSApp.terminate(nil)
         }
+        hotkeyStore.onChange = { [weak self] hotkey in
+            self?.hotkeyManager.register([.picker: hotkey])
+        }
+        hotkeyManager.onFire = { [weak self] _ in
+            self?.showPicker()
+        }
+        hotkeyManager.start()
         if DiagnosticsMenuGate.isEnabled {
             logger.notice("Diagnostics gate ON — insertion-fidelity probe menu will be installed")
             statusItemController.onRunProbe = { [weak self] probeCase in
@@ -57,9 +72,21 @@ final class AppCoordinator {
         logger.info("Show Picker requested (picker panel arrives in #6)")
     }
 
-    /// Open the Settings window (#8). Stub until that issue lands.
+    /// Open the stub Settings window (hotkey recorder). Replaced by the real Settings in #8.
     func showSettings() {
-        logger.info("Settings requested (window arrives in #8)")
+        logger.info("Settings requested")
+        if hotkeySettingsWindow == nil {
+            hotkeySettingsWindow = HotkeySettingsWindowController(store: hotkeyStore)
+        }
+        hotkeyStore.hotkey = HotkeyDefaults.load()
+        NSApp.activate(ignoringOtherApps: true)
+        hotkeySettingsWindow?.showWindow(nil)
+        hotkeySettingsWindow?.window?.makeKeyAndOrderFront(nil)
+    }
+
+    /// Drop Carbon registrations so a quit leaves no ghost hotkey.
+    func stop() {
+        hotkeyManager.stop()
     }
 
     /// Check for updates (#9). Stub until Sparkle is wired; #9 retargets the menu item at
