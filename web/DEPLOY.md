@@ -19,7 +19,7 @@ up before the first real release.
   (`wrangler deploy` fails the trigger step with a 409, "already has externally managed DNS
   records"), and `override_existing_dns_record` does not cover them. Delete the apex A and
   the `www` CNAME in the dashboard first; `wrangler deploy` recreates both as proxied
-  Worker records. Leave MX/TXT alone — they carry email forwarding.
+  Worker records. Leave MX/TXT alone — Cloudflare Email Routing owns them now.
 
 ## 1. R2 bucket
 
@@ -90,3 +90,8 @@ curl -sIL https://accented.app/appcast.xml | grep -i '^location\|^HTTP'
 - DNS/TLS/routes are managed by `wrangler deploy` from `wrangler.toml` once the custom-domain
   routes are uncommented — no manual dashboard DNS edits needed beyond adding the zone in step 0.
 - No tokens in the repo.
+- `feedback@accented.app` forwards to a personal inbox via Cloudflare Email Routing, which
+  owns the `route*.mx.cloudflare.net` MX records, the SPF TXT, and the DKIM key on the zone.
+  The registrar's old `eforward*.registrar-servers.com` MX records were deleted to enable it;
+  Cloudflare refuses to turn routing on while non-Cloudflare MX exist. The site's Feedback
+  link builds that address in JS from `data-user`/`data-host` so it is not in the HTML source.
