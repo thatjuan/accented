@@ -290,7 +290,7 @@ kbd {
   text-align: center;
   padding: 88px 28px 80px;
 }
-.closer .display { max-width: 16ch; margin: 0 auto; }
+.closer .display { max-width: 14ch; margin: 0 auto; }
 .closer .actions {
   justify-content: center;
   margin-top: 32px;
