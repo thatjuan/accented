@@ -76,6 +76,11 @@ final class AppCoordinator {
                 self?.hotkeyManager.register([.picker: hotkey])
             }
             .store(in: &cancellables)
+        settingsStore.$doubleTapModifier
+            .sink { [weak self] mode in
+                self?.hotkeyManager.setDoubleTap(mode)
+            }
+            .store(in: &cancellables)
         hotkeyManager.onFire = { [weak self] _ in
             self?.showPicker()
         }

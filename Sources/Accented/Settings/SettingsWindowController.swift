@@ -100,10 +100,15 @@ private struct GeneralSettingsTab: View {
 
             Section {
                 HotkeyRecorderView(hotkey: $store.hotkey)
+                Picker("Also trigger with", selection: $store.doubleTapModifier) {
+                    ForEach(DoubleTapModifier.allCases) { mode in
+                        Text(mode.label).tag(mode)
+                    }
+                }
             } header: {
                 Text("Hotkey")
             } footer: {
-                Text("Shows the picker from any app. Default is ⌥Space.")
+                Text("Default combo is ⌥Space. Double-press is two quick taps. ⌘C and a held ⌘ do not open the picker. Double-press needs Accessibility.")
             }
 
             Section {
