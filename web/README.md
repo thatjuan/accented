@@ -25,7 +25,7 @@ See `DEPLOY.md` for one-time standup, and `docs/decisions/0002-sparkle-auto-upda
 web/
   wrangler.toml          Worker + R2 binding (RELEASES → accented-releases)
   src/index.ts           /healthz, /appcast.xml, /releases/*, /download
-  public/                one-page site + 404 + OG/favicon
+  public/                one-page site + 404 + OG/favicon + /llms.txt + /index.md
   COPY.md                locked marketing copy
   DESIGN.md              direction, tokens, image prompts
   scripts/publish.mjs    pull-before-regenerate + ordered upload to R2
