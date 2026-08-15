@@ -5,8 +5,8 @@ Tone: short, specific, a little dry. No em dashes. No invented claims.
 
 ## Meta
 
-- Title: Accented — accents, on your terms
-- Description: A tiny macOS menu bar picker for accented characters. Instant, global, and limited to the languages you actually write in. Free download.
+- Title: Accented — double-press ⌘ for your accents
+- Description: Double-press ⌘ for a tiny macOS accent picker, limited to the languages you actually write in. Free download.
 
 ## Header
 
@@ -16,27 +16,34 @@ Tone: short, specific, a little dry. No em dashes. No invented claims.
 ## Hero
 
 - Eyebrow: macOS · menu bar
-- Headline: The accent picker macOS almost shipped.
-- Lede: Hold-to-accent is slow, it vanishes when key repeat is on, and it dumps every mark for every language you enabled. Accented is a global hotkey and a small strip of only the characters you use.
+- Headline: Double-press ⌘. Skip the hold menu.
+- Lede: Holding a letter is supposed to open an accent menu. It doesn't always. When it does, you get a pile of marks you never use. Double-press ⌘ and Accented comes up, limited to the languages you actually write in.
 - Primary CTA: Download for macOS → `/download`
-- Version chip: `v0.1.0` (stamped by `Scripts/release.sh`)
+- Version chip: `v0.3.0` (stamped by `Scripts/release.sh`)
 - Fine print: macOS 13 or later. Menu bar app. Free.
 
 ## How it works
 
-1. **Type, then trigger.** Keep writing. When you need a mark, press ⌥Space (or your own combo).
+1. **Double-press ⌘.** The picker appears wherever you are typing. ⌥Space still works if you prefer a combo.
 2. **Pick from your set.** If you just typed `a`, you see `á` (and only what you enabled for `a`). If you did not, you see your whole set in one row.
 3. **It lands in the field.** Numbers, arrows, or a click. The picker goes away. The character replaces or inserts.
 
+## Languages
+
+- Eyebrow: Languages
+- Headline: Turn on what you write. Leave the rest off.
+- Body: Spanish without the French extras. Two languages if that's how you write. The picker is the union of every language you enable, and you can switch off individual characters.
+- Image: Settings → Languages (`/languages.webp`)
+
 ## Features
 
-1. **Yours, not the system’s.** Spanish, French, Portuguese, German, Italian, Catalan. Turn languages on. Turn individual characters off. Add your own.
-2. **Instant, not a hold.** No press-and-hold delay. Works with key repeat on. Same trigger in every app.
+1. **Double-press ⌘.** Not a hold. Doesn't vanish when key repeat is on. Same trigger in every app.
+2. **Yours, not everyone else's.** Spanish, French, Portuguese, German, Italian, Catalan. On, off, or pick characters one by one.
 3. **A real Mac app.** Menu bar, no Dock icon, Sparkle updates, Accessibility asked once and explained.
 
 ## Closer
 
-- Headline: Only the marks you actually use.
+- Headline: Double-press ⌘. Only the marks you use.
 - CTA: Download for macOS → `/download`
 - Sub: macOS 13 or later
 

@@ -3,26 +3,26 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Accented — accents, on your terms</title>
-  <meta name="description" content="A tiny macOS menu bar picker for accented characters. Instant, global, and limited to the languages you actually write in. Free download." />
+  <title>Accented — double-press ⌘ for your accents</title>
+  <meta name="description" content="Double-press ⌘ for a tiny macOS accent picker, limited to the languages you actually write in. Free download." />
   <link rel="canonical" href="https://accented.app/" />
 
   <meta property="og:site_name" content="Accented" />
-  <meta property="og:title" content="Accented — accents, on your terms" />
-  <meta property="og:description" content="A tiny macOS menu bar picker for accented characters. Instant, global, and limited to the languages you actually write in. Free download." />
+  <meta property="og:title" content="Accented — double-press ⌘ for your accents" />
+  <meta property="og:description" content="Double-press ⌘ for a tiny macOS accent picker, limited to the languages you actually write in. Free download." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://accented.app/" />
   <meta property="og:image" content="https://accented.app/og-image.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Accented — accents, on your terms" />
+  <meta property="og:image:alt" content="Accented — double-press ⌘ for your accents" />
 
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Accented — accents, on your terms" />
-  <meta name="twitter:description" content="A tiny macOS menu bar picker for accented characters. Instant, global, and limited to the languages you actually write in. Free download." />
+  <meta name="twitter:title" content="Accented — double-press ⌘ for your accents" />
+  <meta name="twitter:description" content="Double-press ⌘ for a tiny macOS accent picker, limited to the languages you actually write in. Free download." />
   <meta name="twitter:image" content="https://accented.app/og-image.jpg" />
-  <meta name="twitter:image:alt" content="Accented — accents, on your terms" />
+  <meta name="twitter:image:alt" content="Accented — double-press ⌘ for your accents" />
 
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/favicon.svg" />
@@ -43,11 +43,16 @@
       <section class="hero">
         <div class="hero-copy">
           <p class="eyebrow">macOS · menu bar</p>
-          <h1 class="display">The accent picker macOS almost shipped.</h1>
+          <div class="chord" aria-hidden="true">
+            <span class="key">⌘</span>
+            <span class="key">⌘</span>
+          </div>
+          <h1 class="display">Double-press ⌘. Skip the hold menu.</h1>
           <p class="lede">
-            Hold-to-accent is slow, it vanishes when key repeat is on, and it dumps every mark
-            for every language you enabled. Accented is a global hotkey and a small strip of
-            only the characters you use.
+            Holding a letter is supposed to open an accent menu. It doesn't always.
+            When it does, you get a pile of marks you never use. Double-press
+            <kbd>⌘</kbd> and Accented comes up, limited to the languages you
+            actually write in.
           </p>
           <div class="actions">
             <a class="btn btn--ink btn--lg" href="/download">
@@ -72,8 +77,8 @@
         <ol class="how-list">
           <li>
             <span class="num">01</span>
-            <h2>Type, then trigger.</h2>
-            <p>Keep writing. When you need a mark, press <kbd>⌥Space</kbd> (or your own combo).</p>
+            <h2>Double-press ⌘.</h2>
+            <p>The picker appears wherever you are typing. <kbd>⌥Space</kbd> still works if you prefer a combo.</p>
           </li>
           <li>
             <span class="num">02</span>
@@ -87,20 +92,40 @@
           </li>
         </ol>
       </section>
+
+      <section class="languages" aria-labelledby="languages-heading">
+        <div class="languages-copy">
+          <p class="eyebrow">Languages</p>
+          <h2 id="languages-heading" class="display display--section">Turn on what you write. Leave the rest off.</h2>
+          <p class="lede">
+            Spanish without the French extras. Two languages if that's how you write.
+            The picker is the union of every language you enable, and you can switch
+            off individual characters.
+          </p>
+        </div>
+        <figure class="lang-shot">
+          <img
+            src="/languages.webp"
+            width="1003"
+            height="1347"
+            alt="Accented Settings, Languages tab. Spanish is on; French, Portuguese, German, Italian, and Catalan are off."
+          />
+        </figure>
+      </section>
     </main>
   </div>
 
   <div class="wrap">
     <section class="features" aria-label="Features">
       <article class="card">
-        <p class="card-label">01 — Yours</p>
-        <h3>Yours, not the system’s.</h3>
-        <p>Spanish, French, Portuguese, German, Italian, Catalan. Turn languages on. Turn individual characters off. Add your own.</p>
+        <p class="card-label">01 — Trigger</p>
+        <h3>Double-press ⌘.</h3>
+        <p>Not a hold. Doesn't vanish when key repeat is on. Same trigger in every app.</p>
       </article>
       <article class="card">
-        <p class="card-label">02 — Instant</p>
-        <h3>Instant, not a hold.</h3>
-        <p>No press-and-hold delay. Works with key repeat on. Same trigger in every app.</p>
+        <p class="card-label">02 — Languages</p>
+        <h3>Yours, not everyone else's.</h3>
+        <p>Spanish, French, Portuguese, German, Italian, Catalan. On, off, or pick characters one by one.</p>
       </article>
       <article class="card">
         <p class="card-label">03 — Native</p>
@@ -111,7 +136,7 @@
   </div>
 
   <section class="closer">
-    <h2 class="display">Only the marks you actually use.</h2>
+    <h2 class="display">Double-press ⌘. Only the marks you use.</h2>
     <div class="actions">
       <a class="btn btn--paper btn--lg" href="/download">Download for macOS</a>
     </div>

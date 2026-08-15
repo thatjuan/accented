@@ -26,7 +26,7 @@ People who write in Spanish, French, Portuguese, and the rest on a Mac, and who 
 
 ## Layout
 
-Header (wordmark + Download) → hero (copy left, letterform still right) → three how-it-works steps → three feature cards → dark closer → footer. Mobile: one column, CTA full-width, type steps as a stack.
+Header (wordmark + Download) → hero (copy left, picker still right; two ⌘ keycaps above the headline) → three how-it-works steps (double-press ⌘ first) → languages (copy + Settings screenshot) → three feature cards → dark closer → footer. Mobile: one column, CTA full-width, type steps as a stack.
 
 ## Mark
 
@@ -39,9 +39,10 @@ Generated with **Grok Imagine** (`image_gen`), not fal.ai. Do not generate a fak
 | File | Use | Prompt |
 |---|---|---|
 | `hero.webp` | Hero still | Product shot: picker over “Tiembla la vocal…” (supplied). |
+| `languages.webp` | Languages section | Real Settings → Languages screenshot (supplied). Not generated. |
 | `og-image.jpg` | 1200×630 share card | Center crop of that still. |
 
-Hero and OG use the product still (picker over Spanish text). The Imagine letterpress shot is retired.
+Hero and OG use the product still (picker over Spanish text). Languages uses the real Settings window. The Imagine letterpress shot is retired.
 
 ## Open Design
 
