@@ -31,6 +31,11 @@ struct PickerSession: Equatable {
         return rows[selectedRow].cells[selectedColumn].variant
     }
 
+    /// One cell in the whole strip: no choice to present, commit it.
+    var isSingleChoice: Bool {
+        rows.count == 1 && rows.first?.cells.count == 1
+    }
+
     static func build(context: PickerContext, catalog: CharacterCatalog) -> PickerSession? {
         switch context.mode {
         case .variants(let base, let uppercase):
@@ -51,19 +56,22 @@ struct PickerSession: Equatable {
     private static func buildBrowse(context: PickerContext, catalog: CharacterCatalog) -> PickerSession? {
         let groups = catalog.allGroups()
         guard !groups.isEmpty else { return nil }
-        let rows: [Row] = groups.map { group in
-            let upper = false
-            let label: String?
-            if let base = group.base {
-                label = String(base)
-            } else {
-                label = nil
+        // One horizontal strip, catalog order (letters then extras). Numbers 1…9
+        // cover the first nine cells, same as variant mode.
+        var cells: [Cell] = []
+        for group in groups {
+            for variant in group.variants {
+                cells.append(Cell(
+                    variant: variant,
+                    glyph: variant.glyph(uppercase: false),
+                    number: cells.count < 9 ? cells.count + 1 : nil
+                ))
             }
-            return row(variants: group.variants, uppercase: upper, label: label)
         }
+        guard !cells.isEmpty else { return nil }
         return PickerSession(
             context: context,
-            rows: rows,
+            rows: [Row(label: nil, cells: cells)],
             selectedRow: 0,
             selectedColumn: 0,
             filteredBase: nil
@@ -113,18 +121,30 @@ struct PickerSession: Equatable {
         selectedColumn = column
     }
 
-    /// Type a letter in browse mode: jump to that group's row, or filter to a single variant row.
-    /// Returns `true` if the letter was consumed.
-    mutating func handleBrowseLetter(_ character: Character, catalog: CharacterCatalog) -> Bool {
-        guard case .browse = context.mode else { return false }
-        guard let base = character.lowercased().first else { return false }
+    /// Type a letter while the picker is up. One variant → commit it; several →
+    /// filter the strip to that group; none → ignore. Works in browse and in
+    /// variant mode (pressing the same letter again should not sit on a 1-cell strip).
+    mutating func handleBrowseLetter(_ character: Character, catalog: CharacterCatalog) -> BrowseLetterResult {
+        guard let base = character.lowercased().first else { return .ignored }
         let uppercase = character.isUppercase
         let variants = catalog.variants(forBase: base)
-        guard !variants.isEmpty else { return false }
+        guard !variants.isEmpty else { return .ignored }
+        if variants.count == 1, let only = variants.first {
+            return .commit(only)
+        }
+        if isSingleChoice, let only = selectedVariant, only.base == base {
+            return .commit(only)
+        }
         filteredBase = base
         rows = [Self.row(variants: variants, uppercase: uppercase, label: nil)]
         selectedRow = 0
         selectedColumn = 0
-        return true
+        return .filtered
     }
+}
+
+enum BrowseLetterResult: Equatable {
+    case ignored
+    case filtered
+    case commit(AccentVariant)
 }

@@ -28,43 +28,78 @@ struct PickerSessionTests {
     }
 
     @Test
-    func browseHasLabeledRowsAndExtrasLast() {
+    func browseIsOneHorizontalRowWithExtrasLast() {
         let context = PickerContext(mode: .browse, caretRect: nil)
         let session = PickerSession.build(context: context, catalog: catalog)
-        #expect(session?.rows.last?.label == nil)
-        #expect(session?.rows.last?.cells.map(\.glyph).contains("¿") == true)
-        #expect(session?.rows.dropLast().allSatisfy { $0.label != nil } == true)
+        #expect(session?.rows.count == 1)
+        #expect(session?.rows.first?.label == nil)
+        let glyphs = session?.rows.first?.cells.map(\.glyph) ?? []
+        #expect(glyphs.contains("á"))
+        #expect(glyphs.suffix(2) == ["¿", "¡"])
+        #expect(session?.rows.first?.cells.first?.number == 1)
     }
 
     @Test
-    func browseLetterFiltersToThatGroup() {
+    func browseLetterFiltersWhenSeveralVariants() {
         var session = PickerSession.build(
             context: PickerContext(mode: .browse, caretRect: nil),
             catalog: catalog
         )!
-        let consumed = session.handleBrowseLetter("e", catalog: catalog)
-        #expect(consumed)
+        // Spanish `u` is ú + ü. A single-option letter commits instead (see below).
+        let result = session.handleBrowseLetter("u", catalog: catalog)
+        #expect(result == .filtered)
         #expect(session.rows.count == 1)
-        #expect(session.rows.first?.cells.map(\.glyph) == ["é"])
-        #expect(session.filteredBase == "e")
+        #expect(session.rows.first?.cells.map(\.glyph) == ["ú", "ü"])
+        #expect(session.filteredBase == "u")
         #expect(session.context.mode == .browse)
     }
 
     @Test
-    func arrowsWrapWithinAndAcrossRows() {
+    func browseLetterCommitsWhenOnlyOneVariant() {
         var session = PickerSession.build(
             context: PickerContext(mode: .browse, caretRect: nil),
             catalog: catalog
         )!
-        let startRow = session.selectedRow
+        let result = session.handleBrowseLetter("a", catalog: catalog)
+        #expect(result == .commit(catalog.variants(forBase: "a")[0]))
+        #expect(session.filteredBase == nil)
+        #expect(session.rows.first?.cells.map(\.glyph).contains("á") == true)
+    }
+
+    @Test
+    func variantModeWithOneOptionIsSingleChoice() {
+        let session = PickerSession.build(
+            context: PickerContext(mode: .variants(base: "a", uppercase: false), caretRect: nil),
+            catalog: catalog
+        )
+        #expect(session?.isSingleChoice == true)
+        #expect(session?.selectedVariant?.character == "á")
+    }
+
+    @Test
+    func pressingTheSameLetterInVariantModeCommitsTheOnlyOption() {
+        var session = PickerSession.build(
+            context: PickerContext(mode: .variants(base: "a", uppercase: false), caretRect: nil),
+            catalog: catalog
+        )!
+        #expect(session.handleBrowseLetter("a", catalog: catalog) == .commit(catalog.variants(forBase: "a")[0]))
+    }
+
+    @Test
+    func arrowsWrapAlongTheSingleRow() {
+        var session = PickerSession.build(
+            context: PickerContext(mode: .browse, caretRect: nil),
+            catalog: catalog
+        )!
+        #expect(session.rows.count == 1)
+        let last = session.rows[0].cells.count - 1
         session.moveVertical(1)
-        #expect(session.selectedRow == startRow + 1)
-        session.moveVertical(-1)
-        #expect(session.selectedRow == startRow)
+        #expect(session.selectedRow == 0)
         session.moveHorizontal(1)
-        // extras row has 2 cells (¿ ¡); first letter rows have 1 — wrapping stays valid
-        #expect(session.selectedColumn >= 0)
-        #expect(session.rows[session.selectedRow].cells.indices.contains(session.selectedColumn))
+        #expect(session.selectedColumn == 1)
+        session.selectedColumn = last
+        session.moveHorizontal(1)
+        #expect(session.selectedColumn == 0)
     }
 
     @Test

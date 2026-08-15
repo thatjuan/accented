@@ -1,7 +1,8 @@
 import AppKit
 
-/// Draws the picker: optional degraded banner, then rows of cells (glyph + 1…9).
-/// Sized to content — no transparent hit-testing margin (diarc #15).
+/// Draws the picker: optional degraded banner, then a horizontal strip of cells
+/// (glyph + 1…9). Browse and variant modes are both one row. Sized to content —
+/// no transparent hit-testing margin (diarc #15).
 @MainActor
 final class PickerContentView: NSView {
 
