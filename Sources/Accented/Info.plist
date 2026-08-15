@@ -1,20 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<!--
-  Accented Info.plist.
-
-  CFBundleShortVersionString / CFBundleVersion are the single version source of truth
-  (Scripts/release.sh bumps them). Sparkle: SUPublicEDKey is the Accented-only EdDSA
-  public key (`generate_keys --account accented`). Do not use diarc's default keychain
-  item. See docs/decisions/0002-sparkle-auto-updates.md.
-
-  Note on TCC usage-string keys: Accessibility does NOT use a per-app Info.plist usage-description
-  key (there is no NSAccessibilityUsageDescription the system reads). The OS shows a generic TCC
-  prompt, so no usage string is declared here.
-
-  This app is non-sandboxed (diarc ARCHITECTURE §7): no App Sandbox entitlement, no sandbox key
-  here. Sandbox forbids the cross-app AX and CGEvent posting the picker depends on.
--->
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
@@ -34,7 +19,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>0.1.0</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>2</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>13.0</string>
 	<key>LSUIElement</key>

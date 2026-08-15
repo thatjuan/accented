@@ -135,6 +135,8 @@ wrangler_oauth r2 object put "${R2_BUCKET}/appcast.xml" \
 readonly DOWNLOAD_PATH="/releases/${APP_NAME}-${RELEASE_VERSION}-${NEW_BUILD}.dmg"
 echo "==> Setting wrangler.toml DOWNLOAD_URL = ${DOWNLOAD_PATH}…"
 /usr/bin/sed -i '' -E "s|^DOWNLOAD_URL = .*|DOWNLOAD_URL = \"${DOWNLOAD_PATH}\"|" "${WEB_DIR}/wrangler.toml"
+echo "==> Stamping homepage version = v${RELEASE_VERSION}…"
+/usr/bin/sed -i '' -E "s|(<span class=\"version\">v)[^<]*(</span>)|\1${RELEASE_VERSION}\2|" "${WEB_DIR}/public/index.html"
 if [[ "${SKIP_DEPLOY:-0}" == "1" ]]; then
     echo "==> SKIP_DEPLOY=1 — not deploying the Worker."
 else
@@ -152,10 +154,10 @@ echo "--- ${ENCLOSURE_URL}"; curl -fsSI "${ENCLOSURE_URL}" | grep -iE "^HTTP|con
 # --- 8. Commit -------------------------------------------------------------------------------
 if [[ "${SKIP_COMMIT:-0}" == "1" ]]; then
     echo "==> SKIP_COMMIT=1 — commit yourself so the next run reads the right baseline:"
-    echo "    git -C \"${REPO_ROOT}\" add Sources/${APP_NAME}/Info.plist web/wrangler.toml && git -C \"${REPO_ROOT}\" commit -m \"chore: release ${RELEASE_VERSION} (build ${NEW_BUILD})\""
+    echo "    git -C \"${REPO_ROOT}\" add Sources/${APP_NAME}/Info.plist web/wrangler.toml web/public/index.html && git -C \"${REPO_ROOT}\" commit -m \"chore: release ${RELEASE_VERSION} (build ${NEW_BUILD})\""
 else
-    echo "==> Committing version bump + DOWNLOAD_URL…"
-    git -C "${REPO_ROOT}" add "Sources/${APP_NAME}/Info.plist" "web/wrangler.toml"
+    echo "==> Committing version bump + DOWNLOAD_URL + homepage version…"
+    git -C "${REPO_ROOT}" add "Sources/${APP_NAME}/Info.plist" "web/wrangler.toml" "web/public/index.html"
     git -C "${REPO_ROOT}" commit -m "chore: release ${RELEASE_VERSION} (build ${NEW_BUILD})"
 fi
 

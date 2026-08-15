@@ -4,12 +4,34 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Accented — Not found</title>
+  <meta name="description" content="That page is not here." />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Newsreader:opsz,ital,wght@6..72,0,400;6..72,1,500&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <main>
-    <h1>404</h1>
-    <p>That page does not exist.</p>
-    <p><a href="/">Back home</a></p>
-  </main>
+  <div class="wrap">
+    <header class="site-header">
+      <a class="logo" href="/" aria-label="Accented home"><span class="acute">á</span>ccented</a>
+      <a class="btn btn--ink" href="/download">Download</a>
+    </header>
+    <main class="not-found">
+      <p class="eyebrow">404</p>
+      <h1 class="display">That page is not here.</h1>
+      <p class="lede">The feed and the download still are.</p>
+      <div class="actions">
+        <a class="btn btn--ink" href="/">Back home</a>
+      </div>
+    </main>
+    <footer class="site-footer">
+      <a class="foot-logo" href="/" aria-label="Accented">á</a>
+      <nav class="foot-links" aria-label="Footer">
+        <a href="https://github.com/thatjuan/accented/issues">Feedback</a>
+      </nav>
+      <span class="disclaimer">Accented is an independent app. Not affiliated with Apple.</span>
+    </footer>
+  </div>
 </body>
 </html>
