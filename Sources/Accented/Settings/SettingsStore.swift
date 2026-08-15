@@ -28,6 +28,7 @@ final class SettingsStore: ObservableObject {
         static let usageCounts = "settings.usageCounts"
         static let hotkeyKeyCode = "settings.hotkeyKeyCode"
         static let hotkeyModifiers = "settings.hotkeyModifiers"
+        static let doubleTapModifier = "settings.doubleTapModifier"
         static let launchAtLogin = "settings.launchAtLogin"
     }
 
@@ -66,6 +67,11 @@ final class SettingsStore: ObservableObject {
         }
     }
 
+    /// Extra trigger: two quick taps of ⌘ or ⌥. Default off so existing users keep ⌥Space only.
+    @Published var doubleTapModifier: DoubleTapModifier = .off {
+        didSet { defaults.set(doubleTapModifier.rawValue, forKey: Key.doubleTapModifier) }
+    }
+
     /// Launch at Login preference. The system (`SMAppService`) is source of truth when
     /// available; this property is the binding surface and a persisted last-known value.
     @Published var launchAtLogin: Bool = false {
@@ -102,6 +108,12 @@ final class SettingsStore: ObservableObject {
             self.hotkey = HotkeyDefaults.load(from: defaults)
         } else {
             self.hotkey = .default
+        }
+        if let raw = defaults.string(forKey: Key.doubleTapModifier),
+           let mode = DoubleTapModifier(rawValue: raw) {
+            self.doubleTapModifier = mode
+        } else {
+            self.doubleTapModifier = .off
         }
         self.launchAtLogin = defaults.bool(forKey: Key.launchAtLogin)
 

@@ -25,6 +25,7 @@ struct SettingsStoreTests {
         #expect(store.disabledCharacters.isEmpty)
         #expect(store.orderingMode == .presetOrder)
         #expect(store.hotkey == .default)
+        #expect(store.doubleTapModifier == .off)
     }
 
     @Test
@@ -40,6 +41,7 @@ struct SettingsStoreTests {
         writer.customExtras = ["†"]
         writer.orderingMode = .mostUsed
         writer.hotkey = Hotkey(keyCode: 0, modifiers: [.command, .option])
+        writer.doubleTapModifier = .command
         writer.launchAtLogin = true
         writer.bumpUsage("é")
 
@@ -52,6 +54,7 @@ struct SettingsStoreTests {
         #expect(reader.hotkey.keyCode == 0)
         #expect(reader.hotkey.modifiers.contains(.command))
         #expect(reader.hotkey.modifiers.contains(.option))
+        #expect(reader.doubleTapModifier == .command)
         #expect(reader.launchAtLogin)
         #expect(reader.usageCounts["é"] == 1)
     }

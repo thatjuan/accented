@@ -29,6 +29,9 @@ final class HotkeyManager {
     private var handlerRef: EventHandlerRef?
     private var defaultsObserver: NSObjectProtocol?
     private var pollTimer: Timer?
+    private var globalMonitor: Any?
+    private var localMonitor: Any?
+    private var sequencer = DoubleTapSequencer()
 
     /// Carbon signature for our `EventHotKeyID`s (`acnt`).
     private static let signature: OSType = 0x61636E74
@@ -41,6 +44,8 @@ final class HotkeyManager {
         // Carbon refs must be released even if `stop()` was skipped (process teardown).
         for ref in hotKeyRefs.values { UnregisterEventHotKey(ref) }
         if let handlerRef { RemoveEventHandler(handlerRef) }
+        if let globalMonitor { NSEvent.removeMonitor(globalMonitor) }
+        if let localMonitor { NSEvent.removeMonitor(localMonitor) }
     }
 
     func start() {
@@ -76,11 +81,29 @@ final class HotkeyManager {
             self.defaultsObserver = nil
         }
         unregisterAll()
+        setDoubleTap(.off)
         if let handlerRef {
             RemoveEventHandler(handlerRef)
             self.handlerRef = nil
         }
         logger.info("Hotkey manager stopped")
+    }
+
+    /// Install or tear down the `flagsChanged` monitors. Default is off.
+    func setDoubleTap(_ mode: DoubleTapModifier) {
+        let kind = mode.kind
+        if sequencer.watching == kind, (globalMonitor != nil) == (kind != nil) {
+            return
+        }
+        tearDownMonitors()
+        sequencer = DoubleTapSequencer()
+        sequencer.watching = kind
+        guard kind != nil else {
+            logger.info("Double-tap trigger off")
+            return
+        }
+        installMonitors()
+        logger.info("Double-tap trigger \(mode.label, privacy: .public)")
     }
 
     /// Replace the registered set. Empty map unregisters. Unknown / deny-listed combos are logged
@@ -148,6 +171,49 @@ final class HotkeyManager {
         }
         logger.info("Hotkey fired (\(slot.rawValue, privacy: .public), \(self.registered[slot]?.displayString ?? "?", privacy: .public))")
         onFire?(slot)
+    }
+
+    private func installMonitors() {
+        let mask: NSEvent.EventTypeMask = [.flagsChanged, .keyDown, .leftMouseDown, .rightMouseDown]
+        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: mask) { [weak self] event in
+            MainActor.assumeIsolated { self?.handleMonitorEvent(event) }
+        }
+        localMonitor = NSEvent.addLocalMonitorForEvents(matching: mask) { [weak self] event in
+            MainActor.assumeIsolated { self?.handleMonitorEvent(event) }
+            return event
+        }
+    }
+
+    private func tearDownMonitors() {
+        if let globalMonitor {
+            NSEvent.removeMonitor(globalMonitor)
+            self.globalMonitor = nil
+        }
+        if let localMonitor {
+            NSEvent.removeMonitor(localMonitor)
+            self.localMonitor = nil
+        }
+    }
+
+    private func handleMonitorEvent(_ event: NSEvent) {
+        let result: DoubleTapSequencer.Result
+        if event.type == .flagsChanged, let kind = DoubleTapSequencer.kind(forKeyCode: event.keyCode) {
+            let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+            result = sequencer.noteFlags(kind: kind, isDown: DoubleTapSequencer.isDown(kind, flags: flags), at: event.timestamp)
+        } else if event.type == .flagsChanged {
+            result = sequencer.noteOther()
+        } else {
+            result = sequencer.noteOther()
+        }
+        switch result {
+        case .none:
+            break
+        case .fire:
+            logger.info("Double-tap fired")
+            onFire?(.picker)
+        case .reset(let reason):
+            logger.debug("Double-tap reset (\(reason, privacy: .public))")
+        }
     }
 
     private func unregisterAll() {

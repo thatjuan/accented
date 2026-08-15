@@ -38,7 +38,8 @@ trigger.
 - Unregister on quit (`applicationWillTerminate`) so a dead process cannot leave a ghost.
 
 A `CGEventTap` is reserved for things that actually need every key (#7 does not: it posts
-events, it does not listen).
+events, it does not listen). Modifier double-taps (#21) use `flagsChanged` monitors, not a
+tap; see ADR 0004.
 
 ## Consequences
 
