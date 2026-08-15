@@ -28,10 +28,18 @@
     <footer class="site-footer">
       <a class="foot-logo" href="/" aria-label="Accented">á</a>
       <nav class="foot-links" aria-label="Footer">
-        <a href="https://github.com/thatjuan/accented/issues">Feedback</a>
+        <a data-user="feedback" data-host="accented.app">Feedback</a>
       </nav>
       <span class="disclaimer">Accented is an independent app. Not affiliated with Apple.</span>
     </footer>
   </div>
+
+  <script>
+    // The feedback address is assembled at runtime from data-user/data-host so it
+    // never appears whole in the HTML source for address scrapers to lift.
+    for (const a of document.querySelectorAll('a[data-user][data-host]')) {
+      a.href = 'mailto:' + a.dataset.user + '@' + a.dataset.host;
+    }
+  </script>
 </body>
 </html>

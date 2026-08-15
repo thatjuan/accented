@@ -50,5 +50,5 @@ Tone: short, specific, a little dry. No em dashes. No invented claims.
 ## Footer
 
 - Wordmark: Accented
-- Feedback: GitHub issues → https://github.com/thatjuan/accented/issues
+- Feedback: mailto feedback@accented.app (href assembled in JS from `data-user`/`data-host` so scrapers can't lift it)
 - Note: Accented is an independent app. Not affiliated with Apple.
