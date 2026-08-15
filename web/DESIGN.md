@@ -38,10 +38,10 @@ Generated with **Grok Imagine** (`image_gen`), not fal.ai. Do not generate a fak
 
 | File | Use | Prompt |
 |---|---|---|
-| `hero.webp` | Hero still, 16:9 | Large letterforms á é ñ ü ¿ painted in dense walnut ink on warm cream laid paper, letterpress impression, one vermillion acute on the á, shallow depth, studio light from the left, no device chrome, no UI, no logos, no people. |
-| `og-image.png` | 1200×630 share card | Composed in code over the same paper/ink palette so the wordmark stays exact. |
+| `hero.webp` | Hero still | Product shot: picker over “Tiembla la vocal…” (supplied). |
+| `og-image.jpg` | 1200×630 share card | Center crop of that still. |
 
-Real picker still: not captured in this pass (`TODO: real picker still`). Hero is letterforms only.
+Hero and OG use the product still (picker over Spanish text). The Imagine letterpress shot is retired.
 
 ## Open Design
 
