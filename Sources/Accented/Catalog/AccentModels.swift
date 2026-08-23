@@ -1,3 +1,5 @@
+import Foundation
+
 /// One accented (or extra) character and its case pair.
 ///
 /// `base` is the letter #7 matches for replace mode (`a` → pick `á` replaces the `a`).
@@ -31,6 +33,19 @@ struct LanguagePreset: Equatable, Sendable {
     let extras: [AccentVariant]
 }
 
+/// A user-built palette: a named set of the exact glyphs someone wants, nothing else.
+/// Resolved into a `LanguagePreset` by `LanguagePresets.preset(for:)` so it rides the same
+/// enabled-preset union as the bundled languages.
+struct CustomPalette: Codable, Equatable, Identifiable, Sendable {
+    /// `"custom.<UUID>"` — namespaced so it can never collide with a bundled id (`es`, `all`, …).
+    var id: String
+    var name: String
+    /// Lowercase / uncased glyphs in the order the user entered them.
+    var glyphs: [String]
+
+    static func newID() -> String { "custom.\(UUID().uuidString)" }
+}
+
 /// How `CharacterCatalog` orders variants inside a group. Persistence lives in `SettingsStore` (#8);
 /// the catalog is handed the mode and a usage-count map, it does not read defaults itself.
 enum OrderingMode: String, Equatable, Sendable, CaseIterable, Identifiable {
@@ -58,12 +73,16 @@ struct CatalogConfiguration: Equatable, Sendable {
     /// Custom extras (no base), e.g. extra punctuation.
     var customExtras: [String]
     var orderingMode: OrderingMode
+    /// User-built palettes. Each becomes a preset the catalog can union in; enabling one is
+    /// the same `enabledPresetIDs` toggle a bundled language uses.
+    var customPalettes: [CustomPalette] = []
 
     static let `default` = CatalogConfiguration(
         enabledPresetIDs: ["es"],
         disabledCharacters: [],
         customVariants: [:],
         customExtras: [],
-        orderingMode: .presetOrder
+        orderingMode: .presetOrder,
+        customPalettes: []
     )
 }

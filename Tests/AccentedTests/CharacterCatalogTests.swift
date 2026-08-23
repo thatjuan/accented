@@ -12,7 +12,8 @@ struct CharacterCatalogTests {
         disabled: [String] = [],
         custom: [Character: [String]] = [:],
         order: OrderingMode = .presetOrder,
-        usage: [String: Int] = [:]
+        usage: [String: Int] = [:],
+        palettes: [CustomPalette] = []
     ) -> CharacterCatalog {
         CharacterCatalog(
             configuration: CatalogConfiguration(
@@ -20,10 +21,15 @@ struct CharacterCatalogTests {
                 disabledCharacters: disabled,
                 customVariants: custom,
                 customExtras: [],
-                orderingMode: order
+                orderingMode: order,
+                customPalettes: palettes
             ),
             usageCounts: usage
         )
+    }
+
+    private func palette(_ glyphs: [String], name: String = "Mine") -> CustomPalette {
+        CustomPalette(id: CustomPalette.newID(), name: name, glyphs: glyphs)
     }
 
     private func glyphs(_ variants: [AccentVariant], upper: Bool = false) -> [String] {
@@ -242,6 +248,55 @@ struct CharacterCatalogTests {
             usage: ["é": 2]
         )
         #expect(glyphs(cat.variants(forBase: "e")) == ["é", "ə"])
+    }
+
+    // MARK: - Custom palettes (#25)
+
+    @Test
+    func customPaletteActsAsPreset() {
+        let mine = palette(["á", "í", "ñ"])
+        let cat = catalog(presets: [mine.id], palettes: [mine])
+        #expect(cat.allGroups().map(\.base) == ["a", "i", "n"])
+        #expect(glyphs(cat.variants(forBase: "a")) == ["á"])
+        #expect(glyphs(cat.variants(forBase: "a"), upper: true) == ["Á"])
+    }
+
+    @Test
+    func customPaletteUnionsWithLanguage() {
+        let mine = palette(["ő"])
+        let cat = catalog(presets: ["es", mine.id], palettes: [mine])
+        // ó is native-ranked, ő is not, so the custom glyph lands after it.
+        #expect(glyphs(cat.variants(forBase: "o")) == ["ó", "ő"])
+    }
+
+    @Test
+    func customPaletteGlobalDisableStillApplies() {
+        let mine = palette(["á", "í"])
+        let cat = catalog(presets: [mine.id], disabled: ["á"], palettes: [mine])
+        #expect(cat.variants(forBase: "a").isEmpty)
+        #expect(glyphs(cat.variants(forBase: "i")) == ["í"])
+    }
+
+    @Test
+    func customPaletteKeepsExtrasOnTheirOwnRow() {
+        let mine = palette(["ñ", "¿"])
+        let cat = catalog(presets: [mine.id], palettes: [mine])
+        #expect(cat.allGroups().map(\.base) == ["n", nil])
+        #expect(glyphs(cat.allGroups().last!.variants) == ["¿"])
+    }
+
+    @Test
+    func inferBaseCoversNativeBundledAndDecomposed() {
+        #expect(LanguagePresets.inferBase(for: "é") == "e")
+        #expect(LanguagePresets.inferBase(for: "ŀ") == "l")
+        #expect(LanguagePresets.inferBase(for: "ı") == "i")
+        #expect(LanguagePresets.inferBase(for: "ő") == "o")
+        #expect(LanguagePresets.inferBase(for: "¿") == nil)
+    }
+
+    @Test
+    func normalizeGlyphsFoldsAndDedupes() {
+        #expect(LanguagePresets.normalizeGlyphs("Á á, í a İ") == ["á", "í"])
     }
 }
 

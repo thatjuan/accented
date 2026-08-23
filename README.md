@@ -15,6 +15,7 @@ macOS already shows an accent menu when you hold a vowel, but it is slow (you wa
 
 - **Language presets**: Spanish, French, Portuguese, German, Italian, Catalan, Turkish. Enable one or several; the picker shows the union of their characters. Spanish also includes `¿ ¡`; French includes `œ æ`; German includes `ß`.
 - **Per-character control**: toggle individual characters off within a preset, or add your own custom characters/symbols.
+- **Custom palettes**: build a named set of just the characters you want (say `á í ñ`) and enable it like a language.
 - **Ordering**: most-used-first or fixed preset order.
 
 ## App shape

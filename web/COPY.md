@@ -32,13 +32,13 @@ Tone: short, specific, a little dry. No em dashes. No invented claims.
 
 - Eyebrow: Languages
 - Headline: Turn on what you write. Leave the rest off.
-- Body: Spanish without the French extras. Two languages if that's how you write. The picker is the union of every language you enable, and you can switch off individual characters.
+- Body: Spanish without the French extras. Two languages if that's how you write. The picker is the union of every language you enable, and you can switch off individual characters. Or build a named palette of just the characters you want, say á í ñ, and enable it like a language.
 - Image: Settings → Languages (`/languages.webp`)
 
 ## Features
 
 1. **Instant, not a hold.** No press-and-hold delay. Works with key repeat on. Same trigger in every app.
-2. **Yours, not everyone else's.** Spanish, French, Portuguese, German, Italian, Catalan, Turkish. On, off, or pick characters one by one.
+2. **Yours, not everyone else's.** Spanish, French, Portuguese, German, Italian, Catalan, Turkish. On, off, pick characters one by one, or build your own named palette.
 3. **A real Mac app.** Menu bar, no Dock icon, updates itself, Accessibility asked once and explained.
 
 ## Closer
