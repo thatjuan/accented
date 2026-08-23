@@ -15,7 +15,7 @@ extension LanguagePreset {
 
 enum LanguagePresets {
 
-    static let all: [LanguagePreset] = [spanish, french, portuguese, german, italian, catalan, allDiacritics]
+    static let all: [LanguagePreset] = [spanish, french, portuguese, german, italian, catalan, turkish, allDiacritics]
 
     static let byID: [String: LanguagePreset] = {
         Dictionary(uniqueKeysWithValues: all.map { ($0.id, $0) })
@@ -51,13 +51,16 @@ enum LanguagePresets {
 
     // MARK: - Native hold-key order (US English macOS press-and-hold)
 
-    /// The system accent menu order. Used as the "All diacritics" preset and as the
-    /// within-group sort for `presetOrder` so overlapping unions (Spanish+French `é`)
-    /// stay in native sequence rather than "whichever preset was enabled first".
+    /// The system accent menu order, plus bases macOS has no hold menu for (`g`) that a
+    /// preset needs a row for. Used as the "All diacritics" preset, as the base order for
+    /// browse mode and the custom-character dropdown, and as the within-group sort for
+    /// `presetOrder` so overlapping unions (Spanish+French `é`) stay in native sequence
+    /// rather than "whichever preset was enabled first".
     static let nativeHoldKeyOrder: [(base: Character, glyphs: [String])] = [
         ("a", ["à", "á", "â", "ä", "æ", "ã", "å", "ā"]),
         ("c", ["ç", "ć", "č"]),
         ("e", ["è", "é", "ê", "ë", "ē", "ė", "ę"]),
+        ("g", ["ğ"]),
         ("i", ["ì", "í", "î", "ï", "ī"]),
         ("l", ["ł"]),
         ("n", ["ñ", "ń"]),
@@ -163,6 +166,23 @@ enum LanguagePresets {
         extras: extras(["·"])
     )
 
+    /// Turkish. `ı` is the dotless i: the picker slot means "the other i", so it pairs
+    /// with `İ` (dotted capital) rather than with Swift's `"ı".uppercased()`, which is `I`.
+    /// See `uppercasePair(for:)`.
+    static let turkish = LanguagePreset(
+        id: "tr",
+        name: "Turkish",
+        groups: groups([
+            ("c", ["ç"]),
+            ("g", ["ğ"]),
+            ("i", ["ı"]),
+            ("o", ["ö"]),
+            ("s", ["ş"]),
+            ("u", ["ü"]),
+        ]),
+        extras: []
+    )
+
     static let allDiacritics = LanguagePreset(
         id: "all",
         name: "All diacritics",
@@ -192,9 +212,17 @@ enum LanguagePresets {
         AccentVariant(character: glyph, uppercase: uppercasePair(for: glyph), base: base)
     }
 
-    /// `ß` → `ẞ` (capital sharp s). Everything else uses `String.uppercased()`.
+    /// Hand-picked case pairs, then `String.uppercased()`.
+    ///
+    /// `ß` → `ẞ` (capital sharp s).
+    ///
+    /// `ı` → `İ`: not a Unicode case pair (`"ı".uppercased()` is `I`), but the picker slot
+    /// means "the other i", so a lowercase context offers dotless `ı` and an uppercase one
+    /// offers dotted `İ`. `character` stays `ı` so lowercase-keyed lookups (disabled set, usage
+    /// counts, union dedupe) never see `İ`, whose `lowercased()` is two scalars (`i` + U+0307).
     static func uppercasePair(for glyph: String) -> String {
         if glyph == "ß" { return "ẞ" }
+        if glyph == "ı" { return "İ" }
         return glyph.uppercased()
     }
 }

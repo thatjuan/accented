@@ -14,7 +14,7 @@ Hold-to-accent is slow, it vanishes when key repeat is on, and it dumps every ma
 
 Turn on what you write. Leave the rest off. Spanish without the French extras. Two languages if that's how you write. The picker is the union of every language you enable, and you can switch off individual characters.
 
-Presets: Spanish, French, Portuguese, German, Italian, Catalan.
+Presets: Spanish, French, Portuguese, German, Italian, Catalan, Turkish.
 
 ## Also
 
