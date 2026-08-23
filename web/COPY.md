@@ -38,7 +38,7 @@ Tone: short, specific, a little dry. No em dashes. No invented claims.
 ## Features
 
 1. **Instant, not a hold.** No press-and-hold delay. Works with key repeat on. Same trigger in every app.
-2. **Yours, not everyone else's.** Spanish, French, Portuguese, German, Italian, Catalan. On, off, or pick characters one by one.
+2. **Yours, not everyone else's.** Spanish, French, Portuguese, German, Italian, Catalan, Turkish. On, off, or pick characters one by one.
 3. **A real Mac app.** Menu bar, no Dock icon, updates itself, Accessibility asked once and explained.
 
 ## Closer

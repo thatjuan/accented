@@ -140,6 +140,45 @@ struct CharacterCatalogTests {
         #expect(ess?.glyph(uppercase: true) == "ẞ")
     }
 
+    // MARK: - Turkish
+
+    /// The `i` slot means "the other i": lowercase context gets dotless `ı`, uppercase gets
+    /// dotted `İ`. That is not a Unicode case pair, so it only works via `uppercasePair`.
+    @Test
+    func turkishDottedAndDotlessI() {
+        let cat = catalog(presets: ["tr"])
+        #expect(glyphs(cat.variants(forBase: "i")) == ["ı"])
+        #expect(glyphs(cat.variants(forBase: "i"), upper: true) == ["İ"])
+        #expect(glyphs(cat.variants(forBase: "I")) == ["ı"])
+        #expect(glyphs(cat.variants(forBase: "I"), upper: true) == ["İ"])
+    }
+
+    /// `ı` and `İ` share one slot, so disabling the lowercase glyph takes both. Documented
+    /// so nobody "fixes" the missing `İ` entry in `disabledCharacters` later.
+    @Test
+    func turkishDisableDotlessIAlsoHidesDottedCapital() {
+        let cat = catalog(presets: ["tr"], disabled: ["ı"])
+        #expect(cat.variants(forBase: "i").isEmpty)
+        #expect(cat.variants(forBase: "I").isEmpty)
+    }
+
+    @Test
+    func turkishGRowSitsInNativeOrder() {
+        let cat = catalog(presets: ["tr"])
+        #expect(cat.allGroups().map(\.base) == ["c", "g", "i", "o", "s", "u"])
+        #expect(glyphs(cat.variants(forBase: "g")) == ["ğ"])
+        #expect(glyphs(cat.variants(forBase: "G"), upper: true) == ["Ğ"])
+    }
+
+    @Test
+    func turkishUnionKeepsNativeOrder() {
+        let french = catalog(presets: ["fr", "tr"])
+        #expect(glyphs(french.variants(forBase: "u")) == ["ù", "û", "ü"])
+        // ş has no native hold-key rank, so it lands after native glyphs.
+        let german = catalog(presets: ["de", "tr"])
+        #expect(glyphs(german.variants(forBase: "s")) == ["ß", "ş"])
+    }
+
     // MARK: - Extras
 
     @Test
