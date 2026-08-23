@@ -1,3 +1,5 @@
+import Foundation
+
 /// Curated language packs + the native macOS hold-key set.
 ///
 /// One Swift file, literal data, no JSON. Within a group, variants follow the native
@@ -189,6 +191,91 @@ enum LanguagePresets {
         groups: nativeHoldKeyOrder.map { groups([( $0.base, $0.glyphs )]).first! },
         extras: extras(["¿", "¡", "«", "»", "·"])
     )
+
+    // MARK: - Custom palettes
+
+    /// Text field → glyph list, the one definition of "what counts as a glyph in a palette".
+    ///
+    /// Whitespace and commas are separators, everything else is a glyph. Case is folded
+    /// (`Á` → `á`), duplicates collapse, and bare ASCII letters (`a`) are dropped because
+    /// `CharacterCatalog` already skips a glyph equal to its own base. Glyphs whose lowercase
+    /// form is more than one `Character` are dropped too — `İ` is the only such glyph in
+    /// practice, and `ı` is the slot that pairs with it (see `uppercasePair(for:)`).
+    static func normalizeGlyphs(_ text: String) -> [String] {
+        var seen = Set<String>()
+        var result: [String] = []
+        for character in text {
+            if character.isWhitespace || character == "," { continue }
+            let folded = String(character).lowercased()
+            guard folded.count == 1 else { continue }
+            if let scalar = folded.unicodeScalars.first, scalar.isASCII, CharacterSet.letters.contains(scalar) {
+                continue
+            }
+            guard seen.insert(folded).inserted else { continue }
+            result.append(folded)
+        }
+        return result
+    }
+
+    /// The base letter a glyph belongs under in the picker, or `nil` if it is an extra.
+    ///
+    /// Native hold-key table first, then every bundled preset (catches `ŀ`, `ı`, `ş`), then
+    /// Unicode decomposition (catches anything else the user pastes: `ő`, `ǎ`, `ṕ`).
+    static func inferBase(for glyph: String) -> Character? {
+        let key = glyph.lowercased()
+        guard !key.isEmpty else { return nil }
+
+        if let entry = nativeHoldKeyOrder.first(where: { $0.glyphs.contains(key) }) {
+            return entry.base
+        }
+        for preset in all {
+            for group in preset.groups where group.variants.contains(where: { $0.character == key }) {
+                return group.base
+            }
+        }
+        if let scalar = key.decomposedStringWithCanonicalMapping.unicodeScalars.first,
+           scalar.isASCII,
+           CharacterSet.letters.contains(scalar) {
+            return Character(scalar)
+        }
+        return nil
+    }
+
+    /// Resolve a user palette into a preset so it unions with the bundled languages unchanged.
+    /// Groups follow native base order; bases macOS has no hold menu for come after, alphabetical.
+    static func preset(for palette: CustomPalette) -> LanguagePreset {
+        var byBase: [Character: [String]] = [:]
+        var baseOrder: [Character] = []
+        var extraGlyphs: [String] = []
+
+        for glyph in normalizeGlyphs(palette.glyphs.joined()) {
+            guard let base = inferBase(for: glyph) else {
+                extraGlyphs.append(glyph)
+                continue
+            }
+            if byBase[base] == nil { baseOrder.append(base) }
+            byBase[base, default: []].append(glyph)
+        }
+
+        let nativeBases = nativeHoldKeyOrder.map { $0.base }
+        let sortedBases = baseOrder.sorted { a, b in
+            switch (nativeBases.firstIndex(of: a), nativeBases.firstIndex(of: b)) {
+            case let (l?, r?): return l < r
+            case (_?, nil): return true
+            case (nil, _?): return false
+            case (nil, nil): return a < b
+            }
+        }
+
+        return LanguagePreset(
+            id: palette.id,
+            name: palette.name,
+            groups: sortedBases.map { base in
+                BaseGroup(base: base, variants: (byBase[base] ?? []).map { variant($0, base: base) })
+            },
+            extras: extras(extraGlyphs)
+        )
+    }
 
     // MARK: - Builders
 
