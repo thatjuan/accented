@@ -25,6 +25,7 @@ It lives in the menu bar (no Dock icon), is free, and asks for Accessibility onc
 
 - [Homepage (markdown)](https://accented.app/index.md): Product page in plain markdown
 - [Download](https://accented.app/download): Current macOS disk image
+- [Source](https://github.com/thatjuan/accented): Open source repository, issues, and build instructions
 
 ## Optional
 

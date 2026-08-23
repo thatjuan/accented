@@ -23,4 +23,6 @@ Presets: Spanish, French, Portuguese, German, Italian, Catalan, Turkish.
 
 Download: https://accented.app/download
 
+Source: https://github.com/thatjuan/accented
+
 Accented is an independent app. Not affiliated with Apple.
