@@ -39,6 +39,7 @@ struct SettingsStoreTests {
         writer.disabledCharacters = ["ä"]
         writer.customVariants = ["e": ["ə"]]
         writer.customExtras = ["†"]
+        writer.customPalettes = [CustomPalette(id: "custom.persist", name: "Mine", glyphs: ["á", "ñ"])]
         writer.orderingMode = .mostUsed
         writer.hotkey = Hotkey(keyCode: 0, modifiers: [.command, .option])
         writer.doubleTapModifier = .command
@@ -50,6 +51,7 @@ struct SettingsStoreTests {
         #expect(reader.disabledCharacters == ["ä"])
         #expect(reader.customVariants["e"] == ["ə"])
         #expect(reader.customExtras == ["†"])
+        #expect(reader.customPalettes == [CustomPalette(id: "custom.persist", name: "Mine", glyphs: ["á", "ñ"])])
         #expect(reader.orderingMode == .mostUsed)
         #expect(reader.hotkey.keyCode == 0)
         #expect(reader.hotkey.modifiers.contains(.command))
@@ -104,6 +106,57 @@ struct SettingsStoreTests {
         writer.automaticallyChecksForUpdates = false
         let reader = SettingsStore(defaults: defaults)
         #expect(reader.automaticallyChecksForUpdates == true)
+    }
+
+    // MARK: - Custom palettes (#25)
+
+    @Test
+    func savingNewPaletteEnablesItAndPersists() {
+        let name = UUID().uuidString
+        let defaults = UserDefaults(suiteName: "com.thatjuan.accented.settings-tests.\(name)")!
+        defaults.removePersistentDomain(forName: "com.thatjuan.accented.settings-tests.\(name)")
+
+        let writer = SettingsStore(defaults: defaults)
+        let palette = CustomPalette(id: CustomPalette.newID(), name: "Mine", glyphs: ["á", "í", "ñ"])
+        writer.savePalette(palette)
+
+        let reader = SettingsStore(defaults: defaults)
+        #expect(reader.customPalettes == [palette])
+        #expect(reader.enabledPresetIDs.contains(palette.id))
+        #expect(reader.makeCatalog().variants(forBase: "n").map(\.character).contains("ñ"))
+    }
+
+    @Test
+    func savingExistingPaletteUpdatesInPlace() {
+        let store = SettingsStore(defaults: suite())
+        var palette = CustomPalette(id: CustomPalette.newID(), name: "Mine", glyphs: ["á"])
+        store.savePalette(palette)
+        palette.glyphs = ["á", "ő"]
+        store.savePalette(palette)
+        #expect(store.customPalettes.count == 1)
+        #expect(store.enabledPresetIDs.filter { $0 == palette.id }.count == 1)
+        #expect(store.makeCatalog().variants(forBase: "o").map(\.character) == ["ő"])
+    }
+
+    @Test
+    func deletingPaletteRemovesItFromEnabledAndFallsBack() {
+        let store = SettingsStore(defaults: suite())
+        let palette = CustomPalette(id: CustomPalette.newID(), name: "Mine", glyphs: ["á"])
+        store.savePalette(palette)
+        store.enabledPresetIDs = [palette.id]
+
+        store.deletePalette(id: palette.id)
+        #expect(store.customPalettes.isEmpty)
+        #expect(store.enabledPresetIDs == ["es"])
+    }
+
+    @Test
+    func resetCharactersKeepsPalettes() {
+        let store = SettingsStore(defaults: suite())
+        let palette = CustomPalette(id: CustomPalette.newID(), name: "Mine", glyphs: ["á"])
+        store.savePalette(palette)
+        store.resetCharactersToDefaults()
+        #expect(store.customPalettes == [palette])
     }
 }
 

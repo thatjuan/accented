@@ -22,8 +22,11 @@ struct CharacterCatalog: Equatable, Sendable {
         #endif
         self.configuration = configuration
         self.usageCounts = usageCounts
-        self.presetsByID = Dictionary(uniqueKeysWithValues: presets.map { ($0.id, $0) })
-        self.presetOrder = presets
+        // Bundled first, user palettes after: a palette sharing a base with a language still
+        // sorts behind it inside the group (`nativeRank`), which is the order people expect.
+        let resolved = presets + configuration.customPalettes.map(LanguagePresets.preset(for:))
+        self.presetsByID = Dictionary(resolved.map { ($0.id, $0) }, uniquingKeysWith: { _, later in later })
+        self.presetOrder = resolved
     }
 
     private let presetsByID: [String: LanguagePreset]

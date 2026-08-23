@@ -180,6 +180,8 @@ private struct GeneralSettingsTab: View {
 
 private struct LanguagesSettingsTab: View {
     @ObservedObject var store: SettingsStore
+    /// Non-nil while the editor sheet is up. Holds the draft's identity, not a store reference.
+    @State private var editing: CustomPalette?
 
     var body: some View {
         Form {
@@ -202,6 +204,33 @@ private struct LanguagesSettingsTab: View {
             }
 
             Section {
+                ForEach(store.customPalettes) { palette in
+                    HStack {
+                        Toggle(isOn: binding(for: palette.id)) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(palette.name)
+                                Text(LanguagePresets.preset(for: palette).sample)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(2)
+                            }
+                        }
+                        Spacer(minLength: 8)
+                        Button("Edit…") { editing = palette }
+                    }
+                }
+                Button("New palette…") {
+                    editing = CustomPalette(id: CustomPalette.newID(), name: "", glyphs: [])
+                }
+            } header: {
+                Text("Custom palettes")
+            } footer: {
+                if store.customPalettes.isEmpty {
+                    Text("Build a palette with only the characters you want. Enable it on its own or together with a language.")
+                }
+            }
+
+            Section {
                 Picker("Order", selection: $store.orderingMode) {
                     ForEach(OrderingMode.allCases) { mode in
                         Text(mode.label).tag(mode)
@@ -214,6 +243,14 @@ private struct LanguagesSettingsTab: View {
             }
         }
         .formStyle(.grouped)
+        .sheet(item: $editing) { palette in
+            PaletteEditorView(
+                palette: palette,
+                isNew: !store.customPalettes.contains { $0.id == palette.id },
+                onSave: { store.savePalette($0) },
+                onDelete: { store.deletePalette(id: palette.id) }
+            )
+        }
     }
 
     private func binding(for id: String) -> Binding<Bool> {
@@ -318,24 +355,13 @@ private struct CharactersSettingsTab: View {
 
     private func characterCell(_ variant: AccentVariant) -> some View {
         let on = !store.isDisabled(variant.character)
-        return Button {
+        return GlyphCell(
+            glyph: variant.character,
+            isOn: on,
+            help: on ? "Click to disable \(variant.character)" : "Click to enable \(variant.character)"
+        ) {
             store.toggleDisabled(variant.character)
-        } label: {
-            Text(variant.character)
-                .font(.system(size: 20))
-                .frame(width: 36, height: 36)
-                .opacity(on ? 1 : 0.28)
-                .background(
-                    RoundedRectangle(cornerRadius: 7)
-                        .fill(on ? Color.clear : Color.primary.opacity(0.04))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 7)
-                        .strokeBorder(Color.primary.opacity(0.12), lineWidth: 1)
-                )
         }
-        .buttonStyle(.plain)
-        .help(on ? "Click to disable \(variant.character)" : "Click to enable \(variant.character)")
     }
 
     private var addCustomPopover: some View {

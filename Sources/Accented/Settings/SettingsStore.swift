@@ -24,6 +24,7 @@ final class SettingsStore: ObservableObject {
         static let disabledCharacters = "settings.disabledCharacters"
         static let customVariants = "settings.customVariants"
         static let customExtras = "settings.customExtras"
+        static let customPalettes = "settings.customPalettes"
         static let orderingMode = "settings.orderingMode"
         static let usageCounts = "settings.usageCounts"
         static let hotkeyKeyCode = "settings.hotkeyKeyCode"
@@ -49,6 +50,11 @@ final class SettingsStore: ObservableObject {
 
     @Published var customExtras: [String] = [] {
         didSet { defaults.set(customExtras, forKey: Key.customExtras) }
+    }
+
+    /// User-built palettes (#25). Enabled/disabled through `enabledPresetIDs` like a language.
+    @Published var customPalettes: [CustomPalette] = [] {
+        didSet { defaults.set(try? JSONEncoder().encode(customPalettes), forKey: Key.customPalettes) }
     }
 
     @Published var orderingMode: OrderingMode = .presetOrder {
@@ -91,6 +97,8 @@ final class SettingsStore: ObservableObject {
         self.customVariants = (defaults.data(forKey: Key.customVariants))
             .flatMap { try? JSONDecoder().decode([String: [String]].self, from: $0) } ?? [:]
         self.customExtras = defaults.stringArray(forKey: Key.customExtras) ?? []
+        self.customPalettes = (defaults.data(forKey: Key.customPalettes))
+            .flatMap { try? JSONDecoder().decode([CustomPalette].self, from: $0) } ?? []
         if let raw = defaults.string(forKey: Key.orderingMode) {
             if raw == "mostRecentlyUsed" {
                 self.orderingMode = .mostUsed
@@ -132,7 +140,8 @@ final class SettingsStore: ObservableObject {
             disabledCharacters: disabledCharacters,
             customVariants: byBase,
             customExtras: customExtras,
-            orderingMode: orderingMode
+            orderingMode: orderingMode,
+            customPalettes: customPalettes
         )
     }
 
@@ -178,6 +187,28 @@ final class SettingsStore: ObservableObject {
         }
     }
 
+    /// Upsert by id. A brand-new palette is enabled straight away — nobody builds one to leave it off.
+    func savePalette(_ palette: CustomPalette) {
+        if let index = customPalettes.firstIndex(where: { $0.id == palette.id }) {
+            customPalettes[index] = palette
+        } else {
+            customPalettes.append(palette)
+            if !enabledPresetIDs.contains(palette.id) {
+                enabledPresetIDs.append(palette.id)
+            }
+        }
+    }
+
+    /// Remove the palette and its enabled entry, falling back to Spanish if nothing is left on.
+    func deletePalette(id: String) {
+        customPalettes.removeAll { $0.id == id }
+        enabledPresetIDs.removeAll { $0 == id }
+        if enabledPresetIDs.isEmpty {
+            enabledPresetIDs = ["es"]
+        }
+    }
+
+    /// Characters-tab reset only. Palettes live on the Languages tab and survive it.
     func resetCharactersToDefaults() {
         disabledCharacters = []
         customVariants = [:]
