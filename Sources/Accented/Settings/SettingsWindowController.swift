@@ -108,7 +108,7 @@ private struct GeneralSettingsTab: View {
             } header: {
                 Text("Hotkey")
             } footer: {
-                Text("Default combo is ⌥Space. Double-press is two quick taps. ⌘C and a held ⌘ do not open the picker. Double-press needs Accessibility.")
+                Text("Double-press ⌘ is on by default, and the ⌥Space combo works alongside it. Double-press is two quick taps. ⌘C and a held ⌘ do not open the picker. Double-press needs Accessibility.")
             }
 
             Section {

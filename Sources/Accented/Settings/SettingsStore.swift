@@ -73,8 +73,10 @@ final class SettingsStore: ObservableObject {
         }
     }
 
-    /// Extra trigger: two quick taps of ⌘ or ⌥. Default off so existing users keep ⌥Space only.
-    @Published var doubleTapModifier: DoubleTapModifier = .off {
+    /// Second trigger: two quick taps of ⌘ or ⌥. Defaults to ⌘⌘ (the trigger the site leads
+    /// with); ⌥Space stays registered alongside it. Anyone who has already chosen a mode keeps
+    /// theirs, since a stored value always wins over this default.
+    @Published var doubleTapModifier: DoubleTapModifier = .command {
         didSet { defaults.set(doubleTapModifier.rawValue, forKey: Key.doubleTapModifier) }
     }
 
@@ -121,7 +123,7 @@ final class SettingsStore: ObservableObject {
            let mode = DoubleTapModifier(rawValue: raw) {
             self.doubleTapModifier = mode
         } else {
-            self.doubleTapModifier = .off
+            self.doubleTapModifier = .command
         }
         self.launchAtLogin = defaults.bool(forKey: Key.launchAtLogin)
 

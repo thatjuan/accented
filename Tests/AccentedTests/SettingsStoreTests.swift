@@ -25,7 +25,7 @@ struct SettingsStoreTests {
         #expect(store.disabledCharacters.isEmpty)
         #expect(store.orderingMode == .presetOrder)
         #expect(store.hotkey == .default)
-        #expect(store.doubleTapModifier == .off)
+        #expect(store.doubleTapModifier == .command)
     }
 
     @Test
